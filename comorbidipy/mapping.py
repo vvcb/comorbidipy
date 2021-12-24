@@ -4,7 +4,10 @@ mapping = dict()
 # Charlson score, ICD9
 tmpn = "charlson_icd9_quan"
 mapping[tmpn] = dict()
-mapping[tmpn]["ami"] = ("410", "412")
+mapping[tmpn]["ami"] = (
+    "410",
+    "412",
+)
 mapping[tmpn]["chf"] = (
     "39891",
     "40201",
@@ -55,7 +58,11 @@ mapping[tmpn]["cevd"] = (
     "437",
     "438",
 )
-mapping[tmpn]["dementia"] = ("290", "2941", "3312")
+mapping[tmpn]["dementia"] = (
+    "290",
+    "2941",
+    "3312",
+)
 mapping[tmpn]["copd"] = (
     "4168",
     "4169",
@@ -92,7 +99,12 @@ mapping[tmpn]["rheumd"] = (
     "7148",
     "725",
 )
-mapping[tmpn]["pud"] = ("531", "532", "533", "534")
+mapping[tmpn]["pud"] = (
+    "531",
+    "532",
+    "533",
+    "534",
+)
 mapping[tmpn]["mld"] = (
     "07022",
     "07023",
@@ -110,8 +122,20 @@ mapping[tmpn]["mld"] = (
     "5739",
     "V427",
 )
-mapping[tmpn]["diab"] = ("2500", "2501", "2502", "2503", "2508", "2509")
-mapping[tmpn]["diabwc"] = ("2504", "2505", "2506", "2507")
+mapping[tmpn]["diab"] = (
+    "2500",
+    "2501",
+    "2502",
+    "2503",
+    "2508",
+    "2509",
+)
+mapping[tmpn]["diabwc"] = (
+    "2504",
+    "2505",
+    "2506",
+    "2507",
+)
 mapping[tmpn]["hp"] = (
     "3341",
     "342",
@@ -230,13 +254,26 @@ mapping[tmpn]["msld"] = (
     "5727",
     "5728",
 )
-mapping[tmpn]["metacanc"] = ("196", "197", "198", "199")
-mapping[tmpn]["aids"] = ("042", "043", "044")
+mapping[tmpn]["metacanc"] = (
+    "196",
+    "197",
+    "198",
+    "199",
+)
+mapping[tmpn]["aids"] = (
+    "042",
+    "043",
+    "044",
+)
 
 # Charlson score, ICD10
 tmpn = "charlson_icd10_quan"
 mapping[tmpn] = dict()
-mapping[tmpn]["ami"] = ("I21", "I22", "I252")
+mapping[tmpn]["ami"] = (
+    "I21",
+    "I22",
+    "I252",
+)
 mapping[tmpn]["chf"] = (
     "I099",
     "I110",
@@ -283,7 +320,15 @@ mapping[tmpn]["cevd"] = (
     "I68",
     "I69",
 )
-mapping[tmpn]["dementia"] = ("F00", "F01", "F02", "F03", "F051", "G30", "G311")
+mapping[tmpn]["dementia"] = (
+    "F00",
+    "F01",
+    "F02",
+    "F03",
+    "F051",
+    "G30",
+    "G311",
+)
 mapping[tmpn]["copd"] = (
     "I278",
     "I279",
@@ -318,7 +363,12 @@ mapping[tmpn]["rheumd"] = (
     "M353",
     "M360",
 )
-mapping[tmpn]["pud"] = ("K25", "K26", "K27", "K28")
+mapping[tmpn]["pud"] = (
+    "K25",
+    "K26",
+    "K27",
+    "K28",
+)
 mapping[tmpn]["mld"] = (
     "B18",
     "K700",
@@ -530,13 +580,27 @@ mapping[tmpn]["msld"] = (
     "K766",
     "K767",
 )
-mapping[tmpn]["metacanc"] = ("C77", "C78", "C79", "C80")
-mapping[tmpn]["aids"] = ("B20", "B21", "B22", "B24")
+mapping[tmpn]["metacanc"] = (
+    "C77",
+    "C78",
+    "C79",
+    "C80",
+)
+mapping[tmpn]["aids"] = (
+    "B20",
+    "B21",
+    "B22",
+    "B24",
+)
 
 # Charlson score, ICD10, Swedish version
 tmpn = "charlson_icd10_se"
 mapping[tmpn] = dict()
-mapping[tmpn]["ami"] = ("I21", "I22", "I252")
+mapping[tmpn]["ami"] = (
+    "I21",
+    "I22",
+    "I252",
+)
 mapping[tmpn]["chf"] = (
     "I110",
     "I130",
@@ -550,9 +614,36 @@ mapping[tmpn]["chf"] = (
     "I43",
     "I50",
 )
-mapping[tmpn]["pvd"] = ("I70", "I71", "I731", "I738", "I771", "I790", "I792", "K55")
-mapping[tmpn]["cevd"] = ("G45", "I60", "I61", "I62", "I63", "I64", "I67", "I69")
-mapping[tmpn]["dementia"] = ("F00", "F01", "F02", "F03", "F051", "G30", "G311", "G319")
+mapping[tmpn]["pvd"] = (
+    "I70",
+    "I71",
+    "I731",
+    "I738",
+    "I771",
+    "I790",
+    "I792",
+    "K55",
+)
+mapping[tmpn]["cevd"] = (
+    "G45",
+    "I60",
+    "I61",
+    "I62",
+    "I63",
+    "I64",
+    "I67",
+    "I69",
+)
+mapping[tmpn]["dementia"] = (
+    "F00",
+    "F01",
+    "F02",
+    "F03",
+    "F051",
+    "G30",
+    "G311",
+    "G319",
+)
 mapping[tmpn]["copd"] = (
     "J43",
     "J44",
@@ -597,7 +688,12 @@ mapping[tmpn]["rheumd"] = (
     "M45",
     "M46",
 )
-mapping[tmpn]["pud"] = ("K25", "K26", "K27", "K28")
+mapping[tmpn]["pud"] = (
+    "K25",
+    "K26",
+    "K27",
+    "K28",
+)
 mapping[tmpn]["mld"] = (
     "B15",
     "B16",
@@ -777,8 +873,19 @@ mapping[tmpn]["canc"] = (
     "C96",
     "C97",
 )
-mapping[tmpn]["msld"] = ("R18", "I850", "I859", "I982", "I983")
-mapping[tmpn]["metacanc"] = ("C77", "C78", "C79", "C80")
+mapping[tmpn]["msld"] = (
+    "R18",
+    "I850",
+    "I859",
+    "I982",
+    "I983",
+)
+mapping[tmpn]["metacanc"] = (
+    "C77",
+    "C78",
+    "C79",
+    "C80",
+)
 mapping[tmpn]["aids"] = (
     "B20",
     "B21",
@@ -795,9 +902,20 @@ mapping[tmpn]["aids"] = (
 # Charlson score, ICD10, Australian version
 tmpn = "charlson_icd10_am"
 mapping[tmpn] = dict()
-mapping[tmpn]["ami"] = ("I21", "I22", "I252")
-mapping[tmpn]["chf"] = ("I50")
-mapping[tmpn]["pvd"] = ("I71", "I790", "I739", "R02", "Z958", "Z959")
+mapping[tmpn]["ami"] = (
+    "I21",
+    "I22",
+    "I252",
+)
+mapping[tmpn]["chf"] = ("I50",)
+mapping[tmpn]["pvd"] = (
+    "I71",
+    "I790",
+    "I739",
+    "R02",
+    "Z958",
+    "Z959",
+)
 mapping[tmpn]["cevd"] = (
     "I60",
     "I61",
@@ -827,7 +945,12 @@ mapping[tmpn]["cevd"] = (
     "I688",
     "I69",
 )
-mapping[tmpn]["dementia"] = ("F00", "F01", "F02", "F051")
+mapping[tmpn]["dementia"] = (
+    "F00",
+    "F01",
+    "F02",
+    "F051",
+)
 mapping[tmpn]["copd"] = (
     "J40",
     "J41",
@@ -862,7 +985,12 @@ mapping[tmpn]["rheumd"] = (
     "M051",
     "M353",
 )
-mapping[tmpn]["pud"] = ("K25", "K26", "K27", "K28")
+mapping[tmpn]["pud"] = (
+    "K25",
+    "K26",
+    "K27",
+    "K28",
+)
 mapping[tmpn]["mld"] = (
     "K702",
     "K703",
@@ -903,7 +1031,13 @@ mapping[tmpn]["diabwc"] = (
     "E134",
     "E144",
 )
-mapping[tmpn]["hp"] = ("G81", "G041", "G820", "G821", "G822")
+mapping[tmpn]["hp"] = (
+    "G81",
+    "G041",
+    "G820",
+    "G821",
+    "G822",
+)
 mapping[tmpn]["rend"] = (
     "N03",
     "N052",
@@ -964,9 +1098,25 @@ mapping[tmpn]["canc"] = (
     "C95",
     "C96",
 )
-mapping[tmpn]["msld"] = ("K729", "K766", "K767", "K721")
-mapping[tmpn]["metacanc"] = ("C77", "C78", "C79", "C80")
-mapping[tmpn]["aids"] = ("B20", "B21", "B22", "B23", "B24")
+mapping[tmpn]["msld"] = (
+    "K729",
+    "K766",
+    "K767",
+    "K721",
+)
+mapping[tmpn]["metacanc"] = (
+    "C77",
+    "C78",
+    "C79",
+    "C80",
+)
+mapping[tmpn]["aids"] = (
+    "B20",
+    "B21",
+    "B22",
+    "B23",
+    "B24",
+)
 
 # Elixhauser score, ICD9
 tmpn = "elixhauser_icd9_quan"
@@ -1026,7 +1176,14 @@ mapping[tmpn]["valv"] = (
     "V422",
     "V433",
 )
-mapping[tmpn]["pcd"] = ("4150", "4151", "416", "4170", "4178", "4179")
+mapping[tmpn]["pcd"] = (
+    "4150",
+    "4151",
+    "416",
+    "4170",
+    "4178",
+    "4179",
+)
 mapping[tmpn]["pvd"] = (
     "0930",
     "4373",
@@ -1046,8 +1203,13 @@ mapping[tmpn]["pvd"] = (
     "5579",
     "V434",
 )
-mapping[tmpn]["hypunc"] = ("401")
-mapping[tmpn]["hypc"] = ("402", "403", "404", "405")
+mapping[tmpn]["hypunc"] = ("401",)
+mapping[tmpn]["hypc"] = (
+    "402",
+    "403",
+    "404",
+    "405",
+)
 mapping[tmpn]["para"] = (
     "3341",
     "342",
@@ -1102,9 +1264,27 @@ mapping[tmpn]["cpd"] = (
     "5081",
     "5088",
 )
-mapping[tmpn]["diabunc"] = ("2500", "2501", "2502", "2503")
-mapping[tmpn]["diabc"] = ("2504", "2505", "2506", "2507", "2508", "2509")
-mapping[tmpn]["hypothy"] = ("2409", "243", "244", "2461", "2468")
+mapping[tmpn]["diabunc"] = (
+    "2500",
+    "2501",
+    "2502",
+    "2503",
+)
+mapping[tmpn]["diabc"] = (
+    "2504",
+    "2505",
+    "2506",
+    "2507",
+    "2508",
+    "2509",
+)
+mapping[tmpn]["hypothy"] = (
+    "2409",
+    "243",
+    "244",
+    "2461",
+    "2468",
+)
 mapping[tmpn]["rf"] = (
     "40301",
     "40311",
@@ -1149,10 +1329,34 @@ mapping[tmpn]["ld"] = (
     "5739",
     "V427",
 )
-mapping[tmpn]["pud"] = ("5317", "5319", "5327", "5329", "5337", "5339", "5347", "5349")
-mapping[tmpn]["aids"] = ("042", "043", "044")
-mapping[tmpn]["lymph"] = ("200", "201", "202", "2030", "2386")
-mapping[tmpn]["metacanc"] = ("196", "197", "198", "199")
+mapping[tmpn]["pud"] = (
+    "5317",
+    "5319",
+    "5327",
+    "5329",
+    "5337",
+    "5339",
+    "5347",
+    "5349",
+)
+mapping[tmpn]["aids"] = (
+    "042",
+    "043",
+    "044",
+)
+mapping[tmpn]["lymph"] = (
+    "200",
+    "201",
+    "202",
+    "2030",
+    "2386",
+)
+mapping[tmpn]["metacanc"] = (
+    "196",
+    "197",
+    "198",
+    "199",
+)
 mapping[tmpn]["solidtum"] = (
     "140",
     "141",
@@ -1229,11 +1433,27 @@ mapping[tmpn]["rheumd"] = (
     "72889",
     "72930",
 )
-mapping[tmpn]["coag"] = ("286", "2871", "2873", "2874", "2875")
-mapping[tmpn]["obes"] = ("2780")
-mapping[tmpn]["wloss"] = ("260", "261", "262", "263", "7832", "7994")
-mapping[tmpn]["fed"] = ("2536", "276")
-mapping[tmpn]["blane"] = ("2800")
+mapping[tmpn]["coag"] = (
+    "286",
+    "2871",
+    "2873",
+    "2874",
+    "2875",
+)
+mapping[tmpn]["obes"] = ("2780",)
+mapping[tmpn]["wloss"] = (
+    "260",
+    "261",
+    "262",
+    "263",
+    "7832",
+    "7994",
+)
+mapping[tmpn]["fed"] = (
+    "2536",
+    "276",
+)
+mapping[tmpn]["blane"] = ("2800",)
 mapping[tmpn]["dane"] = (
     "2801",
     "2802",
@@ -1292,7 +1512,14 @@ mapping[tmpn]["psycho"] = (
     "297",
     "298",
 )
-mapping[tmpn]["depre"] = ("2962", "2963", "2965", "3004", "309", "311")
+mapping[tmpn]["depre"] = (
+    "2962",
+    "2963",
+    "2965",
+    "3004",
+    "309",
+    "311",
+)
 
 # Elixhauser score, ICD10
 tmpn = "elixhauser_icd10_quan"
@@ -1351,7 +1578,13 @@ mapping[tmpn]["valv"] = (
     "Z953",
     "Z954",
 )
-mapping[tmpn]["pcd"] = ("I26", "I27", "I280", "I288", "I289")
+mapping[tmpn]["pcd"] = (
+    "I26",
+    "I27",
+    "I280",
+    "I288",
+    "I289",
+)
 mapping[tmpn]["pvd"] = (
     "I70",
     "I71",
@@ -1367,8 +1600,13 @@ mapping[tmpn]["pvd"] = (
     "Z958",
     "Z959",
 )
-mapping[tmpn]["hypunc"] = ("I10")
-mapping[tmpn]["hypc"] = ("I11", "I12", "I13", "I15")
+mapping[tmpn]["hypunc"] = ("I10",)
+mapping[tmpn]["hypc"] = (
+    "I11",
+    "I12",
+    "I13",
+    "I15",
+)
 mapping[tmpn]["para"] = (
     "G041",
     "G114",
@@ -1484,7 +1722,13 @@ mapping[tmpn]["diabc"] = (
     "E147",
     "E148",
 )
-mapping[tmpn]["hypothy"] = ("E00", "E01", "E02", "E03", "E890")
+mapping[tmpn]["hypothy"] = (
+    "E00",
+    "E01",
+    "E02",
+    "E03",
+    "E890",
+)
 mapping[tmpn]["rf"] = (
     "I120",
     "I131",
@@ -1522,8 +1766,22 @@ mapping[tmpn]["ld"] = (
     "K769",
     "Z944",
 )
-mapping[tmpn]["pud"] = ("K257", "K259", "K267", "K269", "K277", "K279", "K287", "K289")
-mapping[tmpn]["aids"] = ("B20", "B21", "B22", "B24")
+mapping[tmpn]["pud"] = (
+    "K257",
+    "K259",
+    "K267",
+    "K269",
+    "K277",
+    "K279",
+    "K287",
+    "K289",
+)
+mapping[tmpn]["aids"] = (
+    "B20",
+    "B21",
+    "B22",
+    "B24",
+)
 mapping[tmpn]["lymph"] = (
     "C81",
     "C82",
@@ -1535,7 +1793,12 @@ mapping[tmpn]["lymph"] = (
     "C900",
     "C902",
 )
-mapping[tmpn]["metacanc"] = ("C77", "C78", "C79", "C80")
+mapping[tmpn]["metacanc"] = (
+    "C77",
+    "C78",
+    "C79",
+    "C80",
+)
 mapping[tmpn]["solidtum"] = (
     "C00",
     "C01",
@@ -1642,7 +1905,7 @@ mapping[tmpn]["coag"] = (
     "D695",
     "D696",
 )
-mapping[tmpn]["obes"] = ("E66")
+mapping[tmpn]["obes"] = ("E66",)
 mapping[tmpn]["wloss"] = (
     "E40",
     "E41",
@@ -1654,9 +1917,19 @@ mapping[tmpn]["wloss"] = (
     "R634",
     "R64",
 )
-mapping[tmpn]["fed"] = ("E222", "E86", "E87")
-mapping[tmpn]["blane"] = ("D500")
-mapping[tmpn]["dane"] = ("D508", "D509", "D51", "D52", "D53")
+mapping[tmpn]["fed"] = (
+    "E222",
+    "E86",
+    "E87",
+)
+mapping[tmpn]["blane"] = ("D500",)
+mapping[tmpn]["dane"] = (
+    "D508",
+    "D509",
+    "D51",
+    "D52",
+    "D53",
+)
 mapping[tmpn]["alcohol"] = (
     "F10",
     "E52",

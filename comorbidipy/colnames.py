@@ -1,5 +1,4 @@
-
-def get_colnames(score:str):
+def get_colnames(score: str):
 
     colnames = {
         "charlson": {

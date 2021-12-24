@@ -12,7 +12,10 @@ from .weights import weights
 from .assignzero import assignzero
 from .colnames import get_colnames
 
-def _calculate_weights(dfp: pd.DataFrame, param_score: str, assign0: bool, weighting:str):
+
+def _calculate_weights(
+    dfp: pd.DataFrame, param_score: str, assign0: bool, weighting: str
+):
 
     # Create a copy of the supplied dataframe first
     df = dfp.copy()
@@ -100,7 +103,6 @@ def comorbidity(
         if c not in dfp:
             dfp[c] = 0
 
-
     print(dfp.columns)
     dfp = _calculate_weights(dfp, param_score, assign0, weighting)
 
@@ -108,9 +110,9 @@ def comorbidity(
         dfp = dfid.merge(dfp, on=id, how="left").fillna(0)
         dfp = _age_adjust(dfp, age, param_score)
 
-    if score =='charlson':
-        dfp[f"survival_10yr"] = dfp[f"age_adj_{weighting}_wt_charlson_icd10_quan"].apply(
-        lambda x: 0.983 ** math.exp(0.9 * x)
-    )
+    if score == "charlson":
+        dfp[f"survival_10yr"] = dfp[
+            f"age_adj_{weighting}_wt_charlson_icd10_quan"
+        ].apply(lambda x: 0.983 ** math.exp(0.9 * x))
 
     return dfp
