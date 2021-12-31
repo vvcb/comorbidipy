@@ -7,7 +7,7 @@ from pandas.core.common import SettingWithCopyWarning
 warnings.simplefilter(action="ignore", category=SettingWithCopyWarning)
 
 import math
-from .mapping import mapping
+from .mapping import mapping, hfrs_mapping
 from .weights import weights
 from .assignzero import assignzero
 from .colnames import get_colnames
@@ -103,7 +103,6 @@ def comorbidity(
         if c not in dfp:
             dfp[c] = 0
 
-    print(dfp.columns)
     dfp = _calculate_weights(dfp, param_score, assign0, weighting)
 
     if age:
@@ -116,3 +115,51 @@ def comorbidity(
         ].apply(lambda x: 0.983 ** math.exp(0.9 * x))
 
     return dfp
+
+
+def hfrs(df: pd.DataFrame, id: str = "id", code: str = "code"):
+    """Calculate Hospital Frailty Risk Score
+
+    This is only applicable to patients who are 75 years or older.
+
+    https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(18)30668-8
+
+    Args:
+        df (pd.DataFrame): Dataframe with 2 columns named `id` and `code`
+        id (str, optional): Name of column to use as `id`. Defaults to "id".
+        code (str, optional): Name of column to use as `code`. Defaults to "code".
+
+    Return:
+        pd.DataFrame: Dataframe with `id` and `hfrs` values.
+    """
+
+    if id not in df.columns or code not in df.columns:
+        raise KeyError(f"Missing column(s). Ensure column(s) {id}, {code} are present.")
+
+    unique_icd_codes = df[code].unique()
+
+    icd_hfrs_heirarchy_map = {
+        i: k for i in unique_icd_codes for k in hfrs_mapping if i.startswith(k)
+    }
+
+    dfid = df[[id]].drop_duplicates()
+    # Replace ICD10 codes with their parent heirarchies in HFRS and others with NaN
+    df[code] = df[code].where(df[code].isin(icd_hfrs_heirarchy_map), other=None)
+    df = df.dropna(subset=[code]).drop_duplicates(subset=[id, code])
+
+    # Replace codes with mapping
+    df[code] = df[code].replace(icd_hfrs_heirarchy_map)
+
+    # Remove duplicated ICD10 heirarchies
+    df = df.drop_duplicates(subset=[id, code])
+
+    # Replace ICD10 heriarchy with the corresponding score
+    df["hfrs"] = df[code].replace(hfrs_mapping)
+
+    # Calculate total hfrs by id
+    out = df.groupby(id).hfrs.sum().reset_index()
+
+    # Merge back into dfid to retain all the original ids.
+    out = dfid.merge(out, on=id, how="left")
+
+    return out
