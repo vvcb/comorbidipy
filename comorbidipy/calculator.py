@@ -1,6 +1,6 @@
 """Main module."""
 import warnings
-
+from functools import lru_cache
 import pandas as pd
 from pandas.core.common import SettingWithCopyWarning
 
@@ -133,33 +133,29 @@ def hfrs(df: pd.DataFrame, id: str = "id", code: str = "code"):
         pd.DataFrame: Dataframe with `id` and `hfrs` values.
     """
 
+    @lru_cache(maxsize=65536)
+    def _mapper(x: str):
+        try:
+            x = x.lstrip()[0:3].upper()
+            return x if x in hfrs_mapping else None
+        except:
+            return None
+
     if id not in df.columns or code not in df.columns:
         raise KeyError(f"Missing column(s). Ensure column(s) {id}, {code} are present.")
 
-    unique_icd_codes = df[code].unique()
-
-    icd_hfrs_heirarchy_map = {
-        i: k for i in unique_icd_codes for k in hfrs_mapping if i.startswith(k)
-    }
-
     dfid = df[[id]].drop_duplicates()
-    # Replace ICD10 codes with their parent heirarchies in HFRS and others with NaN
-    df[code] = df[code].where(df[code].isin(icd_hfrs_heirarchy_map), other=None)
-    df = df.dropna(subset=[code]).drop_duplicates(subset=[id, code])
 
-    # Replace codes with mapping
-    df[code] = df[code].replace(icd_hfrs_heirarchy_map)
+    df = df[[id, code]].dropna().drop_duplicates()
+    df[code] = df[code].apply(_mapper)
 
-    # Remove duplicated ICD10 heirarchies
-    df = df.drop_duplicates(subset=[id, code])
+    # Drop missing and duplicates. This should leave only codes in hfrs_mapping
+    df = df.dropna().drop_duplicates()
 
-    # Replace ICD10 heriarchy with the corresponding score
-    df["hfrs"] = df[code].replace(hfrs_mapping)
+    df["hfrs"] = df.icd10.replace(hfrs_mapping)
+    df = df.groupby(id)["hfrs"].sum().reset_index()
 
-    # Calculate total hfrs by id
-    out = df.groupby(id).hfrs.sum().reset_index()
+    # Merge back into original list of ids. Fill missing values with 0.
+    df = dfid.merge(df, on=id, how="left").fillna(0)
 
-    # Merge back into dfid to retain all the original ids.
-    out = dfid.merge(out, on=id, how="left")
-
-    return out
+    return df
