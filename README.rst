@@ -13,32 +13,28 @@ comorbidipy
         :target: https://comorbidipy.readthedocs.io/en/latest/?version=latest
         :alt: Documentation Status
 
-Python package to calculate comorbidity scores including Charlson Comorbidity Score and Elixhauser Score and their weighted variants.
+Python package to calculate comorbidity scores including Charlson Comorbidity Score and Elixhauser Score and their weighted variants as well as other clinical risk scores.
 
-This library is effectively a rewrite of the excellent R library `comorbidity` (<https://github.com/ellessenne/comorbidity/>) by Alessandro Gasparini (<https://www.ellessenne.xyz/>).
+The `comorbidity` function of this library is effectively a rewrite of the excellent R library `comorbidity` (<https://github.com/ellessenne/comorbidity/>) by Alessandro Gasparini (<https://www.ellessenne.xyz/>).
 Please check out his work and the excellent documentation he has produced.
+The Python API has been modified slightly to allow adjusting for age. 
+Only the `comorbidity` function from that library has been reproduced here at present.
 
-The Python API has been modified slightly to allow adjusting for age. Only the `comorbidity` function has been reproduced here at present.
+Comorbidipy also includes additional clinical risk calculators listed under *Features*.
 
 List of Risk Scores
 -------------------
-
-There are several other risk scores in addition to the Charlson and Elixhauser scores and it seems reasonable to use this library to expose these as additional functions.
-I will try to keep this list updated as I make slow progress on this.
 
 - Charlson Comorbidity index
 - Elixhauser index
 - Hospital Frailty Risk Score
 
+License and Documentation
+-------------------------
 
 * Free software: MIT license
 * Documentation: https://comorbidipy.readthedocs.io. (TODO)
 
-
-Features
---------
-
-* TODO
 
 Credits
 -------
