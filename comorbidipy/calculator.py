@@ -144,15 +144,17 @@ def hfrs(df: pd.DataFrame, id: str = "id", code: str = "code"):
     if id not in df.columns or code not in df.columns:
         raise KeyError(f"Missing column(s). Ensure column(s) {id}, {code} are present.")
 
-    dfid = df[[id]].drop_duplicates()
-
+    # Keep only id, code columns and drop missing and duplicates first
     df = df[[id, code]].dropna().drop_duplicates()
+
+    dfid = df[[id]].drop_duplicates()
+    
     df[code] = df[code].apply(_mapper)
 
     # Drop missing and duplicates. This should leave only codes in hfrs_mapping
     df = df.dropna().drop_duplicates()
 
-    df["hfrs"] = df.icd10.replace(hfrs_mapping)
+    df["hfrs"] = df[code].replace(hfrs_mapping)
     df = df.groupby(id)["hfrs"].sum().reset_index()
 
     # Merge back into original list of ids. Fill missing values with 0.
