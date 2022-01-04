@@ -46,6 +46,6 @@ setup(
     test_suite="tests",
     tests_require=test_requirements,
     url="https://github.com/vvcb/comorbidipy",
-    version="version='0.2.1'",
+    version="version='0.2.2'",
     zip_safe=False,
 )
