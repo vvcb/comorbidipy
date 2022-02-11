@@ -2,6 +2,10 @@
 History
 =======
 
+0.3.0 (2022-02-11)
+------------------
+* Add SHMI variant of Charlson Comorbidity Score. Based on SHMI Specification Version 1.35 2020-09-24 (https://files.digital.nhs.uk/B8/F8D021/SHMI%20specification%20v1.35.pdf)
+
 0.2.1 (2021-01-02)
 ------------------
 

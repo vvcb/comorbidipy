@@ -47,6 +47,26 @@ for w in mapping.keys():
             metacanc=6,
             aids=2,
         )
+        # UK SHMI (version 1.35 Sept 2020)
+        weights[w]["shmi"] = dict(
+            ami=5,
+            chf=13,
+            pvd=6,
+            cevd=11,
+            dementia=14,
+            copd=4,
+            rheumd=4,
+            pud=9,
+            mld=8,
+            diab=3,
+            diabwc=-1,
+            hp=1,
+            rend=10,
+            canc=8,
+            msld=18,
+            metacanc=14,
+            aids=2,
+        )
     else:
         # Elixhauser-compatible weights:
         # van Walraven
