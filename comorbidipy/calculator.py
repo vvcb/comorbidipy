@@ -21,6 +21,9 @@ def _calculate_weights(
     df = dfp.copy()
 
     # if assign0 is True, set the less severe of the comorbidities to 0
+    # this does not change the values in the actual columns but only affects the weighting
+    # e.g the final dataset will still have true for both diabetes and diabetes with complications
+    # but only diabetes with complications will be used for calculating the final score.
     if assign0:
         df = assignzero(df, param_score)
 
@@ -30,7 +33,8 @@ def _calculate_weights(
 
     colname = f"{weighting}_wt_{param_score}"
     dfp[colname] = df.multiply(w).sum(axis=1)
-
+    # if sum of weights is less than zero, set it zero (this only applies to UK SHMI)
+    dfp[colname] = dfp[colname].where(dfp[colname] >= 0, 0)
     return dfp
 
 
@@ -109,9 +113,9 @@ def comorbidity(
         dfp = dfid.merge(dfp, on=id, how="left").fillna(0)
         dfp = _age_adjust(dfp, age, param_score)
 
-    if score == "charlson":
+    if score == "charlson" and weighting == "charlson":
         dfp[f"survival_10yr"] = dfp[
-            f"age_adj_{weighting}_wt_charlson_icd10_quan"
+            f"age_adj_{weighting}_wt_charlson_icd10_{variant}"
         ].apply(lambda x: 0.983 ** math.exp(0.9 * x))
 
     return dfp
@@ -148,7 +152,7 @@ def hfrs(df: pd.DataFrame, id: str = "id", code: str = "code"):
     df = df[[id, code]].dropna().drop_duplicates()
 
     dfid = df[[id]].drop_duplicates()
-    
+
     df[code] = df[code].apply(_mapper)
 
     # Drop missing and duplicates. This should leave only codes in hfrs_mapping
