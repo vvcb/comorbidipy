@@ -113,10 +113,10 @@ def comorbidity(
         dfp = dfid.merge(dfp, on=id, how="left").fillna(0)
         dfp = _age_adjust(dfp, age, param_score)
 
-    if score == "charlson" and weighting == "charlson":
-        dfp[f"survival_10yr"] = dfp[
-            f"age_adj_{weighting}_wt_charlson_icd10_{variant}"
-        ].apply(lambda x: 0.983 ** math.exp(0.9 * x))
+        if score == "charlson" and weighting == "charlson":
+            dfp[f"survival_10yr"] = dfp[
+                f"age_adj_{weighting}_wt_charlson_icd10_{variant}"
+            ].apply(lambda x: 0.983 ** math.exp(0.9 * x))
 
     return dfp
 
