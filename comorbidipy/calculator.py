@@ -7,7 +7,7 @@ from pandas.core.common import SettingWithCopyWarning
 warnings.simplefilter(action="ignore", category=SettingWithCopyWarning)
 
 import math
-from .mapping import mapping, hfrs_mapping
+from .mapping import mapping, hfrs_mapping, impairments
 from .weights import weights
 from .assignzero import assignzero
 from .colnames import get_colnames
@@ -160,6 +160,55 @@ def hfrs(df: pd.DataFrame, id: str = "id", code: str = "code"):
 
     df["hfrs"] = df[code].replace(hfrs_mapping)
     df = df.groupby(id)["hfrs"].sum().reset_index()
+
+    # Merge back into original list of ids. Fill missing values with 0.
+    df = dfid.merge(df, on=id, how="left").fillna(0)
+
+    return df
+
+
+def disability(df: pd.DataFrame, id: str = "id", code: str = "code")-> pd.DataFrame:
+    """Identify disabilities and sensory impairments from ICD10 codes
+
+    Args:
+        df (pd.DataFrame): Pandas dataframe containing at least id and code columns
+        id (str, optional): Name of column containing patient identifier. Defaults to "id".
+        code (str, optional): Name of column containing ICD10 codes. Defaults to "code".
+
+    Raises:
+        KeyError: Error is raised if id or code columns are not present in dataframe.
+
+    Returns:
+        Pandas DataFrame: Pandas DataFrame with id and various disabilities/impairments columns coded as 0 or 1.
+    """    
+
+    if id not in df.columns or code not in df.columns:
+        raise KeyError(f"Missing column(s). Ensure column(s) {id}, {code} are present.")
+
+    
+    df = df.dropna(subset=[id, code])
+
+    dfid = df[[id]].drop_duplicates()
+
+    icd = df[code].unique()
+
+    reverse_mapping = {
+        i: k for i in icd for k, v in impairments.items() if i.startswith(tuple(v))
+    }
+
+    # Keep only codes that are in mapping
+    df[code] = df[code].where(df[code].isin(reverse_mapping.keys()), other=None)
+
+    df = df.dropna(subset=[code]).drop_duplicates(subset=[id, code])
+
+    # Replace codes with mapping
+    df[code] = df[code].replace(reverse_mapping)
+    # not sure if this is needed but if there are duplicates,  pivot will fail
+    df = df.drop_duplicates(subset=[id, code])
+    df["tmp"] = 1
+
+    # Pivot
+    df = df.pivot(index=id, columns=code, values="tmp")
 
     # Merge back into original list of ids. Fill missing values with 0.
     df = dfid.merge(df, on=id, how="left").fillna(0)

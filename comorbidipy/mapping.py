@@ -2354,3 +2354,29 @@ hfrs_mapping = {
     "K52": 0.3,
     "R50": 0.1,
 }
+
+# protected characteristics, disabilities, sensory impairments
+# https://www.england.nhs.uk/wp-content/uploads/2016/03/cquin-lcl-ld-indictrs.docx
+impairments = {
+    "frail": ["R54", "R53"],
+    "ld_asd": [
+        "F067",
+        "F70",
+        "F71",
+        "F72",
+        "F73",
+        "F78",
+        "F79",
+        "F803",
+        "F813",
+        "F818",
+        "F819",
+        "F83",
+        "F84",
+        "F88",
+        "F89",
+    ],
+    "impaired_vision": ["H54"],
+    "impaired_hearing": ["H90", "H91"],
+    "impaired_speech": ["F80", "F811", "F810"],
+}
