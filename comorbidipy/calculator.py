@@ -13,7 +13,7 @@ from .assignzero import assignzero
 from .colnames import get_colnames
 
 
-def _calculate_weights(
+def _calculate_weighted_score(
     dfp: pd.DataFrame, param_score: str, assign0: bool, weighting: str
 ):
 
@@ -27,23 +27,22 @@ def _calculate_weights(
     if assign0:
         df = assignzero(df, param_score)
 
-    # Get the weights into a dataframe
+    # Get the weights into a pandas series
     w = weights[param_score][weighting]
     w = pd.Series(w)
 
-    colname = f"{weighting}_wt_{param_score}"
-    dfp[colname] = df.multiply(w).sum(axis=1)
+    dfp["comorbidity_score"] = df.multiply(w).sum(axis=1)
     # if sum of weights is less than zero, set it zero (this only applies to UK SHMI)
-    dfp[colname] = dfp[colname].where(dfp[colname] >= 0, 0)
+    dfp["comorbidity_score"] = dfp["comorbidity_score"].where(
+        dfp["comorbidity_score"] >= 0, 0
+    )
     return dfp
 
 
-def _age_adjust(dfp: pd.DataFrame, age: str, param_score: str):
+def _age_adjust(dfp: pd.DataFrame, age: str):
 
-    colnames = dfp.filter(regex=param_score).columns
     age_score = dfp[age].subtract(40).floordiv(10).apply(lambda x: min(max(0, x), 4))
-    for c in colnames:
-        dfp["age_adj_" + c] = dfp[c] + age_score
+    dfp["age_adj_comorbidity_score"] = dfp["comorbidity_score"] + age_score
 
     return dfp
 
@@ -64,59 +63,78 @@ def comorbidity(
 
     if id not in df.columns or code not in df.columns:
         raise KeyError(f"Missing column(s). Ensure column(s) {id}, {code} are present.")
-    if age:
-        if age not in df.columns:
-            raise KeyError(f"Column age was assigned {age} but not found")
-
-    param_score = f"{score}_{icd}_{variant}"
-
-    if param_score not in mapping.keys():
-        raise KeyError("Combination of score, icd and variant not found in mappings.")
 
     df = df.dropna(subset=[id, code])
 
-    dfid = df[[id, age]].drop_duplicates()
+    if age:
+        if age not in df.columns:
+            raise KeyError(f"Column age was assigned {age} but not found")
+        dfid = df[[id, age]].drop_duplicates(subset=['id'])
+    else:
+        dfid = df[[id]].drop_duplicates()
 
-    icd = df[code].unique()
+    score_icd_variant = f"{score}_{icd}_{variant}"
+
+    if score_icd_variant not in mapping.keys():
+        raise KeyError(
+            "Combination of score, icd and variant not found in mappings.\n"
+            f"Allowed score_icd_variant combinations are {list(mapping)}"
+        )
 
     reverse_mapping = {
         i: k
-        for i in icd
-        for k, v in mapping[param_score].items()
+        for i in df[code].unique()
+        for k, v in mapping[score_icd_variant].items()
         if i.startswith(tuple(v))
     }
 
     # Keep only codes that are in mapping
-    df[code] = df[code].where(df[code].isin(reverse_mapping.keys()), other=None)
+    df[code] = df[code].where(df[code].isin(reverse_mapping), other=None)
 
     df = df.dropna(subset=[code]).drop_duplicates(subset=[id, code])
 
     # Replace codes with mapping
     df[code] = df[code].replace(reverse_mapping)
-    # not sure if this is needed but if there are duplicates,  pivot will fail
+    # The following is needed as multiple codes may map to same comorbidity
+    # If there are duplicates, pivot will fail
     df = df.drop_duplicates(subset=[id, code])
-    df["tmp"] = 1
 
     # Pivot
+    df["tmp"] = 1
     dfp = df.pivot(index=id, columns=code, values="tmp").fillna(0)
 
     # If a particular comorbidity does not occur at all in the dataset,
-    # create a column with 0 values in it
+    # create a column and assign 0
     colnames = get_colnames(score)
     for c in colnames:
-        if c not in dfp:
+        if c not in dfp.columns:
             dfp[c] = 0
 
-    dfp = _calculate_weights(dfp, param_score, assign0, weighting)
+    # Calculate weighted score
+    dfp = _calculate_weighted_score(dfp, score_icd_variant, assign0, weighting)
 
+    # Merge back into dfid, adjusting for age and calculating survival if needed
     if age:
         dfp = dfid.merge(dfp, on=id, how="left").fillna(0)
-        dfp = _age_adjust(dfp, age, param_score)
+        dfp = _age_adjust(dfp, age)
 
         if score == "charlson" and weighting == "charlson":
-            dfp[f"survival_10yr"] = dfp[
-                f"age_adj_{weighting}_wt_charlson_icd10_{variant}"
-            ].apply(lambda x: 0.983 ** math.exp(0.9 * x))
+            dfp[f"survival_10yr"] = dfp[f"age_adj_comorbidity_score"].apply(
+                lambda x: 0.983 ** math.exp(0.9 * x)
+            )
+    else:
+        dfp = dfid.merge(dfp, on=id, how="left").fillna(0)
+
+    # Add metadata to dataframe before returning.
+    # Helps when calling this function with different parameters and
+    # outputs are all called 'comorbidity_score'!
+    dfp.attrs = {
+        "score": score,
+        "icd": icd,
+        "variant": variant,
+        "weighting": weighting,
+        "assign0": assign0,
+    }
 
     return dfp
 
@@ -167,7 +185,7 @@ def hfrs(df: pd.DataFrame, id: str = "id", code: str = "code"):
     return df
 
 
-def disability(df: pd.DataFrame, id: str = "id", code: str = "code")-> pd.DataFrame:
+def disability(df: pd.DataFrame, id: str = "id", code: str = "code") -> pd.DataFrame:
     """Identify disabilities and sensory impairments from ICD10 codes
 
     Args:
@@ -180,12 +198,11 @@ def disability(df: pd.DataFrame, id: str = "id", code: str = "code")-> pd.DataFr
 
     Returns:
         Pandas DataFrame: Pandas DataFrame with id and various disabilities/impairments columns coded as 0 or 1.
-    """    
+    """
 
     if id not in df.columns or code not in df.columns:
         raise KeyError(f"Missing column(s). Ensure column(s) {id}, {code} are present.")
 
-    
     df = df.dropna(subset=[id, code])
 
     dfid = df[[id]].drop_duplicates()
