@@ -66,7 +66,7 @@ for w in mapping.keys():
             msld=18,
             metacanc=14,
             aids=2,
-        ), 
+        )
         # UK SHMI (version 1.35 Sept 2020) - modified to increase weighting for diabwc from -1 to 4
         weights[w]["shmi_modified"] = dict(
             ami=5,
