@@ -1,3 +1,4 @@
 pandas
-myst_parser
+myst-parser
 linkify-it-py 
+comorbidipy
