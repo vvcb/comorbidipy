@@ -1,1 +1,2 @@
 pandas
+myst_parser
