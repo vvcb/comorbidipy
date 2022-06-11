@@ -1,5 +1,5 @@
 Welcome to comorbidipy's documentation!
-======================================
+=======================================
 
 .. toctree::
    :maxdepth: 2
@@ -12,6 +12,7 @@ Welcome to comorbidipy's documentation!
    contributing
    authors
    history
+
 
 Indices and tables
 ==================

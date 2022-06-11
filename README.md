@@ -1,4 +1,5 @@
-# comorbidiPy
+comorbidiPy
+===========
 
 [![PyPi](https://img.shields.io/pypi/v/comorbidipy)](https://pypi.python.org/pypi/comorbidipy)
 [![Build](https://github.com/vvcb/comorbidipy/actions/workflows/publish-to-pypi.yaml/badge.svg)](https://pypi.python.org/pypi/comorbidipy)
@@ -10,18 +11,21 @@ The `comorbidity` function of this library is effectively a rewrite of the excel
 
 Comorbidipy also includes additional clinical risk calculators listed below.
 
-## Feature List
+Feature List
+------------
 
 - Charlson Comorbidity Score
 - Elixhauser Comorbidity Index
 - Hospital Frailty Risk Score
 - Disability and Sensory Impairments
 
-## Variants of Charlson and Elixhauser Scores
+Variants of Charlson and Elixhauser Scores
+------------------------------------------
 
 The `comorbidity` function allows calculation of Charlson and Elixhauser score using ICD9 or ICD10 codes and the following variations.
 
-### Charlson Comorbidity Score
+Variations of Charlson Comorbidity Score
+----------------------------------------
 
 - Mapping:
   - Quan version
@@ -35,7 +39,8 @@ The `comorbidity` function allows calculation of Charlson and Elixhauser score u
   - SHMI
   - Modified SHMI
 
-### Elixhauser Comorbidity Index
+Elixhauser Comorbidity Index
+----------------------------
 
 - Mapping:
   - Quan
@@ -44,12 +49,14 @@ The `comorbidity` function allows calculation of Charlson and Elixhauser score u
   - van Walraven
   - Swiss
 
-## License and Documentation
+License and Documentation
+-------------------------
 
 - Free software: MIT license
 - Documentation: <https://comorbidipy.readthedocs.io>. (TODO)
 
-## Credits
+Credits
+-------
 
 - __Cookiecutter__ <https://github.com/audreyr/cookiecutter>
 - __R library `comorbidity`__ <https://github.com/ellessenne/comorbidity/>

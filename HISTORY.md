@@ -1,4 +1,4 @@
-# History
+# Changelog
 
 ## 0.4.4 (2022-06-11)
 

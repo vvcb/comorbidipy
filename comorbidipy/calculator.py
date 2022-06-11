@@ -58,7 +58,34 @@ def comorbidity(
     weighting: str = "quan",
     assign0: bool = True,
 ):
+    """Calculate Charlson and Elixhauser Comorbidity Scores from ICD codes
 
+    Args:
+        df (pd.DataFrame): Pandas Dataframe with at least 2 columns for id and code
+        id (str, optional): Name of column with unique identifier. This may be for a single patient or an episode. Defaults to "id".
+        code (str, optional): Name of column with ICD codes. Defaults to "code".
+        age (str, optional): Name of column with age. Defaults to "age". If age is not provided, set this to None.
+        score (str, optional): One of "charlson", "elixhauser". Defaults to "charlson".
+        icd (str, optional): One of "icd9", "icd10" and descibes the version used in the `code` column. Defaults to "icd10".
+        variant (str, optional): Mapping variant to use. Defaults to "quan".
+        weighting (str, optional): Weighting variant to use. Defaults to "quan".
+        assign0 (bool, optional): Should the less severe form of a comorbidity be set to 0 if the more severe form is present. Defaults to True.
+
+    Raises:
+        KeyError: Raised if `id` or `code` are not in `df.columns`. 
+        KeyError: If `age` is not None and `age` is not in `df.columns`.
+        KeyError: Raised if combination of score, icd and variant not found in mappings. Call comorbidipy.get_mappings() to see permitted combinations.
+
+    Returns:
+        Pandas DataFrame: Returns dataframe with one row per `id`. The dataframe will contain comorbidities in columns as well as a `comorbidity_score` column.
+        If `score`=="charlson" and `age` is given, `age_adjusted_comorbidity_score` and `survival_10yr` are calculated as below.
+
+        age_adjusted_comorbidity_score = comorbidity_score + 1 point for every decade over 40 upto a maximum of 4 points
+        
+        .. math::
+            10yr survival = 0.983^(e^(0.9 * comorbidity_score))
+
+    """
     # check the dataframe contains the required columns
 
     if id not in df.columns or code not in df.columns:
