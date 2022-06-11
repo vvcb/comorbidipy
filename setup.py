@@ -21,7 +21,7 @@ setup(
     author_email="vvcb.n1@gmail.com",
     python_requires=">=3.6",
     classifiers=[
-        "Development Status ::4 - Beta",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Science/Research",
         "Intended Audience :: Healthcare Industry",
         "Intended Audience :: Developers",
