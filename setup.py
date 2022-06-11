@@ -21,7 +21,9 @@ setup(
     author_email="vvcb.n1@gmail.com",
     python_requires=">=3.6",
     classifiers=[
-        "Development Status :: 2 - Pre-Alpha",
+        "Development Status ::4 - Beta",
+        "Intended Audience :: Science/Research",
+        "Intended Audience :: Healthcare Industry",
         "Intended Audience :: Developers",
         "License :: OSI Approved :: MIT License",
         "Natural Language :: English",
@@ -31,7 +33,7 @@ setup(
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
     ],
-    description="Python Boilerplate contains all the boilerplate you need to create a Python package.",
+    description="Python package to calculate comorbidity scores and other clinical risk scores.",
     entry_points={
         "console_scripts": [
             "comorbidipy=comorbidipy.cli:main",
@@ -49,4 +51,5 @@ setup(
     url="https://github.com/vvcb/comorbidipy",
     version="0.4.4",
     zip_safe=False,
+    maintainer="vvcb",
 )
