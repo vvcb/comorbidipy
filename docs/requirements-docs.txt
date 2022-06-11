@@ -1,2 +1,3 @@
 pandas
 myst_parser
+linkify-it-py 
