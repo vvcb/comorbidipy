@@ -101,7 +101,7 @@ def comorbidity(
     if age:
         if age not in df.columns:
             raise KeyError(f"Column age was assigned {age} but not found")
-        dfid = df[[id, age]].drop_duplicates(subset=['id'])
+        dfid = df[[id, age]].drop_duplicates(subset=[id])
     else:
         dfid = df[[id]].drop_duplicates()
 
