@@ -1,4 +1,0 @@
-pandas
-myst-parser
-linkify-it-py 
-comorbidipy

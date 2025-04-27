@@ -1,9 +1,9 @@
 # Empty list
-mapping = dict()
+mapping = {}
 
 # Charlson score, ICD9
 tmpn = "charlson_icd9_quan"
-mapping[tmpn] = dict()
+mapping[tmpn] = {}
 mapping[tmpn]["ami"] = (
     "410",
     "412",
@@ -268,7 +268,7 @@ mapping[tmpn]["aids"] = (
 
 # Charlson score, ICD10
 tmpn = "charlson_icd10_quan"
-mapping[tmpn] = dict()
+mapping[tmpn] = {}
 mapping[tmpn]["ami"] = (
     "I21",
     "I22",
@@ -595,7 +595,7 @@ mapping[tmpn]["aids"] = (
 
 # Charlson score, ICD10, Swedish version
 tmpn = "charlson_icd10_se"
-mapping[tmpn] = dict()
+mapping[tmpn] = {}
 mapping[tmpn]["ami"] = (
     "I21",
     "I22",
@@ -901,7 +901,7 @@ mapping[tmpn]["aids"] = (
 
 # Charlson score, ICD10, Australian version
 tmpn = "charlson_icd10_am"
-mapping[tmpn] = dict()
+mapping[tmpn] = {}
 mapping[tmpn]["ami"] = (
     "I21",
     "I22",
@@ -1122,7 +1122,7 @@ mapping[tmpn]["aids"] = (
 # https://files.digital.nhs.uk/B8/F8D021/SHMI%20specification%20v1.35.pdf
 # SHMI Specification version 1.35 Date 2020-09-24
 tmpn = "charlson_icd10_shmi"
-mapping[tmpn] = dict()
+mapping[tmpn] = {}
 mapping[tmpn]["ami"] = (
     "I21",
     "I22",
@@ -1380,10 +1380,9 @@ mapping[tmpn]["aids"] = (
     "O987",
 )
 
-
 # Elixhauser score, ICD9
 tmpn = "elixhauser_icd9_quan"
-mapping[tmpn] = dict()
+mapping[tmpn] = {}
 mapping[tmpn]["chf"] = (
     "39891",
     "40201",
@@ -1786,7 +1785,7 @@ mapping[tmpn]["depre"] = (
 
 # Elixhauser score, ICD10
 tmpn = "elixhauser_icd10_quan"
-mapping[tmpn] = dict()
+mapping[tmpn] = {}
 mapping[tmpn]["chf"] = (
     "I099",
     "I110",

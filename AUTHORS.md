@@ -2,7 +2,7 @@
 
 ## Development Lead
 
-- vvcb <vvcb.n1@gmail.com>
+- vvcb <https://github.com/vvcb>
 
 ## Contributors
 
