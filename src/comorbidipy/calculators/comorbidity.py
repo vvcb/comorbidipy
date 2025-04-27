@@ -6,7 +6,7 @@ import polars as pl
 
 from comorbidipy.codemaps.mapping import mapping
 
-from ..weights import weights
+from ..codemaps.weights import weights
 
 
 class ICDVersion(StrEnum):
