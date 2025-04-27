@@ -594,7 +594,7 @@ mapping[tmpn]["aids"] = (
 )
 
 # Charlson score, ICD10, Swedish version
-tmpn = "charlson_icd10_se"
+tmpn = "charlson_icd10_swedish"
 mapping[tmpn] = {}
 mapping[tmpn]["ami"] = (
     "I21",
@@ -900,7 +900,7 @@ mapping[tmpn]["aids"] = (
 )
 
 # Charlson score, ICD10, Australian version
-tmpn = "charlson_icd10_am"
+tmpn = "charlson_icd10_australian"
 mapping[tmpn] = {}
 mapping[tmpn]["ami"] = (
     "I21",

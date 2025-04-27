@@ -90,7 +90,7 @@ for w in mapping:
     else:
         # Elixhauser-compatible weights:
         # van Walraven
-        weights[w]["vw"] = {
+        weights[w]["van_walraven"] = {
             "chf": 7,
             "carit": 5,
             "valv": -1,

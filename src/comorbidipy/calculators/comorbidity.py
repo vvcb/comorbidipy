@@ -1,14 +1,147 @@
-"""Main module."""
-
 import math
-from functools import lru_cache
+from enum import StrEnum
+from typing import Annotated
 
 import polars as pl
 
-from .assignzero import assignzero
-from .colnames import get_colnames
-from .mapping import hfrs_mapping, impairments, mapping
-from .weights import weights
+from comorbidipy.codemaps.mapping import mapping
+
+from ..weights import weights
+
+
+class ICDVersion(StrEnum):
+    """ICD version enum."""
+
+    ICD9 = "icd9"
+    ICD10 = "icd10"
+
+
+class ScoreType(StrEnum):
+    """Score type enum."""
+
+    CHARLSON = "charlson"
+    ELIXHAUSER = "elixhauser"
+
+
+class MappingVariant(StrEnum):
+    """Mapping variant enum."""
+
+    QUAN = "quan"
+    SWEDISH = "swedish"
+    AUSTRALIAN = "australian"
+    SHMI = "shmi"
+
+
+class WeightingVariant(StrEnum):
+    """Weighting variant enum."""
+
+    QUAN = "quan"
+    CHARLSON = "charlson"
+    SHMI = "shmi"
+    SHMI_MODIFIED = "shmi_modified"
+    VAN_WALRAVEN = "van_walraven"
+    SWISS = "swiss"
+
+
+T_assign_zero = Annotated[
+    bool,
+    "Should the less severe form of a comorbidity be set to 0 if the more severe form is present.",  # noqa: E501
+    "Default: True",
+]
+
+
+colnames = {
+    "charlson": {
+        "aids": "AIDS or HIV",
+        "ami": "acute myocardial infarction",
+        "canc": "cancer any malignancy",
+        "cevd": "cerebrovascular disease",
+        "chf": "congestive heart failure",
+        "copd": "chronic obstructive pulmonary disease",
+        "dementia": "dementia",
+        "diab": "diabetes without complications",
+        "diabwc": "diabetes with complications",
+        "hp": "hemiplegia or paraplegia",
+        "metacanc": "metastatic solid tumour",
+        "mld": "mild liver disease",
+        "msld": "moderate or severe liver disease",
+        "pud": "peptic ulcer disease",
+        "pvd": "peripheral vascular disease",
+        "rend": "renal disease",
+        "rheumd": "rheumatoid disease",
+    },
+    "elixhauser": {
+        "aids": " AIDS/HIV",
+        "alcohol": " alcohol abuse",
+        "blane": " blood loss anaemia",
+        "carit": " cardiac arrhythmias",
+        "chf": " congestive heart failure",
+        "coag": " coagulopathy",
+        "cpd": " chronic pulmonary disease",
+        "dane": " deficiency anaemia",
+        "depre": " depression",
+        "diabc": " diabetes complicated",
+        "diabunc": " diabetes uncomplicated",
+        "drug": " drug abuse",
+        "fed": " fluid and electrolyte disorders",
+        "hypc": " hypertension complicated",
+        "hypothy": " hypothyroidism",
+        "hypunc": " hypertension uncomplicated",
+        "ld": " liver disease",
+        "lymph": " lymphoma",
+        "metacanc": " metastatic cancer",
+        "obes": " obesity",
+        "ond": " other neurological disorders",
+        "para": " paralysis",
+        "pcd": " pulmonary circulation disorders",
+        "psycho": " psychoses",
+        "pud": " peptic ulcer disease excluding bleeding",
+        "pvd": " peripheral vascular disorders",
+        "rf": " renal failure",
+        "rheumd": " rheumatoid arthritis/collaged vascular disease",
+        "solidtum": " solid tumour without metastasis",
+        "valv": " valvular disease",
+        "wloss": " weight loss",
+    },
+}
+
+
+def _assignzero(df: pl.DataFrame, score: ScoreType) -> pl.DataFrame:
+    if "charlson" in score:
+        # "Mild liver disease" (`mld`) and "Moderate/severe liver disease" (`msld`)
+        df = df.with_columns(
+            mld=pl.when(pl.col("msld") == 0).then(pl.col("mld")).otherwise(0),
+        )
+
+        # "Diabetes" (`diab`) and "Diabetes with complications" (`diabwc`)
+        df = df.with_columns(
+            diab=pl.when(pl.col("diabwc") == 0).then(pl.col("diab")).otherwise(0),
+        )
+
+        # "Cancer" (`canc`) and "Metastatic solid tumour" (`metacanc`)
+        df = df.with_columns(
+            canc=pl.when(pl.col("metacanc") == 0).then(pl.col("canc")).otherwise(0),
+        )
+
+    elif "elixhauser" in score:
+        # "Hypertension, uncomplicated" (`hypunc`) and "Hypertension, complicated" (`hypc`)  # noqa: E501
+        df = df.with_columns(
+            hypunc=pl.when(pl.col("hypc") == 0).then(pl.col("hypunc")).otherwise(0),
+        )
+
+        # "Diabetes, uncomplicated" (`diabunc`) and "Diabetes, complicated" (`diabc`)
+        df = df.with_columns(
+            diabunc=pl.when(pl.col("diabc") == 0).then(pl.col("diabunc")).otherwise(0),
+        )
+
+        # "Solid tumour" (`solidtum`) and "Metastatic cancer" (`metacanc`)
+        df = df.with_columns(
+            solidtum=pl.when(pl.col("metacanc") == 0)
+            .then(pl.col("solidtum"))
+            .otherwise(0),
+        )
+
+    return df
 
 
 def _calculate_weighted_score(
@@ -23,7 +156,7 @@ def _calculate_weighted_score(
     # if assign0 is True, set the less severe of the comorbidities to 0
     # if the more severe form is present
     if assign0:
-        df = assignzero(df, param_score)
+        df = _assignzero(df, param_score)
 
     # Get the weights as a dictionary
     w = weights[param_score][weighting]
@@ -47,7 +180,7 @@ def _calculate_weighted_score(
     return dfp
 
 
-def _age_adjust(dfp: pl.DataFrame, age: str) -> pl.DataFrame:
+def _add_age_weighting(dfp: pl.DataFrame, age: str) -> pl.DataFrame:
     # Calculate age score: (age - 40) / 10, clamped between 0 and 4
     age_score = ((pl.col(age) - 40) // 10).clip(0, 4)
 
@@ -64,11 +197,11 @@ def comorbidity(  # noqa: PLR0913
     id: str = "id",
     code: str = "code",
     age: str = "age",
-    score: str = "charlson",
-    icd: str = "icd10",
-    variant: str = "quan",
-    weighting: str = "quan",
-    assign0: bool = True,
+    score: ScoreType = ScoreType.CHARLSON,
+    icd: ICDVersion = ICDVersion.ICD10,
+    variant: MappingVariant = MappingVariant.QUAN,
+    weighting: WeightingVariant = WeightingVariant.QUAN,
+    assign0: T_assign_zero = True,
 ) -> pl.DataFrame:
     """Calculate Charlson and Elixhauser Comorbidity Scores from ICD codes
 
@@ -165,8 +298,8 @@ def comorbidity(  # noqa: PLR0913
 
     # If a particular comorbidity does not occur at all in the dataset,
     # create a column and assign 0
-    colnames = get_colnames(score)
-    for c in colnames:
+
+    for c in colnames[score]:
         if c not in dfp.columns:
             dfp = dfp.with_columns(pl.lit(0).alias(c))
 
@@ -174,16 +307,14 @@ def comorbidity(  # noqa: PLR0913
     dfp = _calculate_weighted_score(dfp, score_icd_variant, assign0, weighting)
 
     # Merge back into dfid, adjusting for age and calculating survival if needed
-    if age:
+    if score == "charlson" and weighting == "charlson" and age:
         dfp = dfid.join(dfp, on=id, how="left").fill_null(0)
-        dfp = _age_adjust(dfp, age)
-
-        if score == "charlson" and weighting == "charlson":
-            dfp = dfp.with_columns(
-                survival_10yr=pl.col("age_adj_comorbidity_score").map_elements(
-                    lambda x: 0.983 ** math.exp(0.9 * x),
-                ),
-            )
+        dfp = _add_age_weighting(dfp, age)
+        dfp = dfp.with_columns(
+            survival_10yr=pl.col("age_adj_comorbidity_score").map_elements(
+                lambda x: 0.983 ** math.exp(0.9 * x),
+            ),
+        )
     else:
         dfp = dfid.join(dfp, on=id, how="left").fill_null(0)
 
@@ -200,121 +331,3 @@ def comorbidity(  # noqa: PLR0913
 
     # Return the dataframe
     return dfp
-
-
-def hfrs(df: pl.DataFrame, id: str = "id", code: str = "code"):
-    """Calculate Hospital Frailty Risk Score
-
-    This is only applicable to patients who are 75 years or older.
-
-    https://www.thelancet.com/journals/lancet/article/PIIS0140-6736(18)30668-8
-
-    Args:
-        df (pl.DataFrame): DataFrame with 2 columns named `id` and `code`
-        id (str, optional): Name of column to use as `id`. Defaults to "id".
-        code (str, optional): Name of column to use as `code`. Defaults to "code".
-
-    Return:
-        pl.DataFrame: DataFrame with `id` and `hfrs` values.
-    """
-
-    @lru_cache(maxsize=65536)
-    def _mapper(x: str):
-        try:
-            x = x.lstrip()[0:3].upper()
-            return x if x in hfrs_mapping else None
-        except Exception as e:
-            print(f"Error in mapping: {e}")
-            return None
-
-    if id not in df.columns or code not in df.columns:
-        raise KeyError(f"Missing column(s). Ensure column(s) {id}, {code} are present.")
-
-    # Keep only id, code columns and drop missing and duplicates first
-    df = df.select(id, code).drop_nulls().unique()
-
-    dfid = df.select(id).unique()
-
-    # Apply mapper function to code column
-    df = df.with_columns(
-        pl.col(code).map_elements(_mapper).alias("mapped_code"),
-    )
-
-    # Drop nulls and duplicates
-    df = df.filter(pl.col("mapped_code").is_not_null()).unique()
-
-    # Replace with HFRS mappings and sum by ID
-    df = df.with_columns(
-        pl.col("mapped_code").map_dict(hfrs_mapping).alias("hfrs"),
-    )
-
-    df = df.group_by(id).agg(
-        pl.sum("hfrs"),
-    )
-
-    # Merge back into original list of ids. Fill missing values with 0.
-    df = dfid.join(df, on=id, how="left").fill_null(0)
-
-    return df
-
-
-def disability(df: pl.DataFrame, id: str = "id", code: str = "code") -> pl.DataFrame:
-    """Identify disabilities and sensory impairments from ICD10 codes
-
-    Args:
-        df (pl.DataFrame): Polars dataframe containing at least id and code columns
-        id (str, optional): Name of column containing patient identifier. Defaults to
-            "id".
-        code (str, optional): Name of column containing ICD10 codes. Defaults to
-            "code".
-
-    Raises:
-        KeyError: Error is raised if id or code columns are not present in dataframe.
-
-    Returns:
-        Polars DataFrame: Polars DataFrame with id and various
-            disabilities/impairments columns coded as 0 or 1.
-    """
-
-    if id not in df.columns or code not in df.columns:
-        raise KeyError(f"Missing column(s). Ensure column(s) {id}, {code} are present.")
-
-    df = df.drop_nulls(subset=[id, code])
-
-    dfid = df.select(id).unique()
-
-    icd = df.get_column(code).unique().to_list()
-
-    reverse_mapping = {
-        i: k for i in icd for k, v in impairments.items() if i.startswith(tuple(v))
-    }
-
-    # Keep only codes that are in mapping
-    df = df.with_columns(
-        pl.col(code).map_dict(reverse_mapping, default=None).alias("mapped_code"),
-    )
-
-    df = df.filter(pl.col("mapped_code").is_not_null()).unique(
-        subset=[id, "mapped_code"],
-    )
-
-    # Create pivot table: one row per ID, one column per impairment
-    df = df.with_columns(tmp=pl.lit(1))
-
-    # Group by id and pivot to get one column per impairment
-    pivot_expr = []
-    unique_impairments = df.get_column("mapped_code").unique().to_list()
-
-    for c in unique_impairments:
-        pivot_expr.append(
-            pl.max(
-                pl.when(pl.col("mapped_code") == c).then(pl.col("tmp")).otherwise(0),
-            ).alias(c),
-        )
-
-    df = df.group_by(id).agg(pivot_expr)
-
-    # Merge back into original list of ids. Fill missing values with 0.
-    df = dfid.join(df, on=id, how="left").fill_null(0)
-
-    return df
