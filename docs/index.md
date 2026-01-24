@@ -1,8 +1,12 @@
 # comorbidipy
 
+
 [![PyPI](https://img.shields.io/pypi/v/comorbidipy)](https://pypi.python.org/pypi/comorbidipy)
-[![Build](https://github.com/vvcb/comorbidipy/actions/workflows/publish-to-pypi.yaml/badge.svg)](https://pypi.org/project/comorbidipy/)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![Tests](https://github.com/vvcb/comorbidipy/actions/workflows/tests.yml/badge.svg)](https://github.com/vvcb/comorbidipy/actions/workflows/tests.yml)
+[![Docs](https://github.com/vvcb/comorbidipy/actions/workflows/docs.yml/badge.svg)](https://vvcb.github.io/comorbidipy)
+[![Python](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+
 
 **comorbidipy** is a Python package for calculating comorbidity scores and clinical risk scores from ICD codes. It is a modernized rewrite of the excellent R library [comorbidity](https://github.com/ellessenne/comorbidity/) with additional calculators.
 
