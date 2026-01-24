@@ -172,11 +172,12 @@ def _calculate_weighted_score(
     dfp = dfp.with_columns(comorbidity_score=score)
 
     # If sum of weights is less than zero, set it to zero (this only applies to UK SHMI)
-    dfp = dfp.with_columns(
-        comorbidity_score=pl.when(pl.col("comorbidity_score") >= 0)
-        .then(pl.col("comorbidity_score"))
-        .otherwise(0),
-    )
+    if weighting in [WeightingVariant.SHMI, WeightingVariant.SHMI_MODIFIED]:
+        dfp = dfp.with_columns(
+            comorbidity_score=pl.when(pl.col("comorbidity_score") >= 0)
+            .then(pl.col("comorbidity_score"))
+            .otherwise(0),
+        )
 
     return dfp
 

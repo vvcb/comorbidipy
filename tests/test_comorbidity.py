@@ -347,3 +347,146 @@ class TestPerformance:
 
         assert result.height == 10_000
         assert "comorbidity_score" in result.columns
+
+
+class TestNegativeScores:
+    """Tests for correct handling of negative comorbidity scores."""
+
+    def test_van_walraven_allows_negative_scores(self):
+        """Test that van Walraven weighting returns negative scores correctly."""
+        # Create a patient with only "drug abuse" which has weight -7
+        df = pl.DataFrame(
+            {
+                "id": ["1"],
+                "code": ["F11"],  # Drug abuse ICD-10 code
+            }
+        )
+        result = comorbidity(
+            df,
+            id="id",
+            code="code",
+            age=None,
+            score=ScoreType.ELIXHAUSER,
+            icd=ICDVersion.ICD10,
+            variant=MappingVariant.QUAN,
+            weighting=WeightingVariant.VAN_WALRAVEN,
+        )
+
+        # Should return -7, not 0
+        assert result["comorbidity_score"][0] == -7
+        assert result["drug"][0] == 1
+
+    def test_van_walraven_multiple_negative_weights(self):
+        """Test van Walraven with multiple negative weight conditions."""
+        # Patient with drug abuse (-7), obesity (-4), and depression (-3)
+        df = pl.DataFrame(
+            {
+                "id": ["1", "1", "1"],
+                "code": ["F11", "E66", "F32"],  # Drug abuse, obesity, depression
+            }
+        )
+        result = comorbidity(
+            df,
+            score=ScoreType.ELIXHAUSER,
+            weighting=WeightingVariant.VAN_WALRAVEN,
+            age=None,
+        )
+
+        # Total should be -7 + (-4) + (-3) = -14
+        assert result["comorbidity_score"][0] == -14
+
+    def test_swiss_allows_negative_scores(self):
+        """Test that Swiss weighting returns negative scores correctly."""
+        # Create a patient with only "drug abuse" which has weight -5 in Swiss
+        df = pl.DataFrame(
+            {
+                "id": ["1"],
+                "code": ["F11"],  # Drug abuse
+            }
+        )
+        result = comorbidity(
+            df,
+            score=ScoreType.ELIXHAUSER,
+            weighting=WeightingVariant.SWISS,
+            age=None,
+        )
+
+        # Should return -5, not 0
+        assert result["comorbidity_score"][0] == -5
+
+    def test_shmi_clamps_negative_to_zero(self):
+        """Test that SHMI weighting clamps negative scores to zero."""
+        # Create a patient with only diabetes with complications (weight -1 in SHMI)
+        df = pl.DataFrame(
+            {
+                "id": ["1"],
+                "code": ["E112"],  # Diabetes with complications
+            }
+        )
+        result = comorbidity(
+            df,
+            score=ScoreType.CHARLSON,
+            weighting=WeightingVariant.SHMI,
+            age=None,
+        )
+
+        # SHMI should clamp to 0
+        assert result["comorbidity_score"][0] == 0
+        assert result["diabwc"][0] == 1
+
+    def test_shmi_modified_allows_positive_scores(self):
+        """Test that SHMI modified handles diabetes correctly with positive weight."""
+        # Create a patient with diabetes with complications (weight 4 in SHMI modified)
+        df = pl.DataFrame(
+            {
+                "id": ["1"],
+                "code": ["E112"],
+            }
+        )
+        result = comorbidity(
+            df,
+            score=ScoreType.CHARLSON,
+            weighting=WeightingVariant.SHMI_MODIFIED,
+            age=None,
+        )
+
+        # SHMI modified has positive weight (4) for diabwc
+        assert result["comorbidity_score"][0] == 4
+
+    def test_mixed_positive_negative_weights(self):
+        """Test mixed positive and negative weights sum correctly."""
+        # Patient with CHF (7) and drug abuse (-7) in van Walraven
+        df = pl.DataFrame(
+            {
+                "id": ["1", "1"],
+                "code": ["I50", "F11"],  # CHF and drug abuse
+            }
+        )
+        result = comorbidity(
+            df,
+            score=ScoreType.ELIXHAUSER,
+            weighting=WeightingVariant.VAN_WALRAVEN,
+            age=None,
+        )
+
+        # Should be 7 + (-7) = 0
+        assert result["comorbidity_score"][0] == 0
+
+    def test_net_negative_score_from_mixed_weights(self):
+        """Test that net negative scores are preserved for non-SHMI."""
+        # Patient with CHF (7) and drug abuse (-7) and obesity (-4)
+        df = pl.DataFrame(
+            {
+                "id": ["1", "1", "1"],
+                "code": ["I50", "F11", "E66"],  # CHF, drug abuse, obesity
+            }
+        )
+        result = comorbidity(
+            df,
+            score=ScoreType.ELIXHAUSER,
+            weighting=WeightingVariant.VAN_WALRAVEN,
+            age=None,
+        )
+
+        # Should be 7 + (-7) + (-4) = -4
+        assert result["comorbidity_score"][0] == -4
