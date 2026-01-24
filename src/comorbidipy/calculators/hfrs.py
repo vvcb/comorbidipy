@@ -44,7 +44,7 @@ def hfrs(
     """
     # Handle LazyFrame input - collect to DataFrame with streaming for large data
     working_df: pl.DataFrame = (
-        df.collect(streaming=True) if isinstance(df, pl.LazyFrame) else df
+        df.collect(engine="streaming") if isinstance(df, pl.LazyFrame) else df
     )
 
     if id_col not in working_df.columns or code_col not in working_df.columns:
