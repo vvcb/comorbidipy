@@ -17,7 +17,7 @@ def comorbidity(
     score: ScoreType = ScoreType.CHARLSON,
     icd: ICDVersion = ICDVersion.ICD10,
     variant: MappingVariant = MappingVariant.QUAN,
-    weighting: WeightingVariant = WeightingVariant.CHARLSON,
+    weighting: WeightingVariant = WeightingVariant.QUAN,
     assign0: bool = True,
 ) -> pl.DataFrame:
     """
