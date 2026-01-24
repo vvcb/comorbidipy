@@ -2,7 +2,7 @@ from functools import lru_cache
 
 import polars as pl
 
-from ..mapping import hfrs_mapping
+from ..codemaps.mapping import hfrs_mapping
 
 
 @lru_cache(maxsize=65536)
@@ -41,7 +41,7 @@ def hfrs(df: pl.DataFrame, id: str = "id", code: str = "code"):
 
     # Apply mapper function to code column
     df = df.with_columns(
-        pl.col(code).map_elements(_mapper).alias("mapped_code"),
+        pl.col(code).map_elements(_mapper, return_dtype=pl.String).alias("mapped_code"),
     )
 
     # Drop nulls and duplicates
@@ -49,7 +49,7 @@ def hfrs(df: pl.DataFrame, id: str = "id", code: str = "code"):
 
     # Replace with HFRS mappings and sum by ID
     df = df.with_columns(
-        pl.col("mapped_code").map_dict(hfrs_mapping).alias("hfrs"),
+        pl.col("mapped_code").replace_strict(hfrs_mapping, default=None).alias("hfrs"),
     )
 
     df = df.group_by(id).agg(

@@ -273,7 +273,7 @@ def comorbidity(  # noqa: PLR0913
 
     # Keep only codes that are in mapping
     df = df.with_columns(
-        pl.col(code).map_dict(reverse_mapping, default=None).alias("mapped_code"),
+        pl.col(code).replace_strict(reverse_mapping, default=None).alias("mapped_code"),
     )
 
     df = df.filter(pl.col("mapped_code").is_not_null())
@@ -289,9 +289,11 @@ def comorbidity(  # noqa: PLR0913
 
     for c in unique_codes:
         pivot_expr.append(
-            pl.max(
-                pl.when(pl.col("mapped_code") == c).then(pl.col("tmp")).otherwise(0),
-            ).alias(c),
+            pl.when(pl.col("mapped_code") == c)
+            .then(pl.col("tmp"))
+            .otherwise(0)
+            .max()
+            .alias(c)
         )
 
     dfp = df.group_by(id).agg(pivot_expr)
