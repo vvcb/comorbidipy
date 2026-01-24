@@ -280,7 +280,7 @@ class TestCLIErrorHandling:
             )
 
             assert result.exit_code == 1
-            assert "Error" in result.stdout or "error" in result.stdout.lower()
+            assert "Error" in result.output or "error" in result.output.lower()
 
     def test_elixhauser_missing_columns(self):
         """Test elixhauser command with missing required columns."""

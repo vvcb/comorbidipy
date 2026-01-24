@@ -19,20 +19,20 @@ class TestCLIBasic:
         """Test --version flag."""
         result = runner.invoke(app, ["--version"])
         assert result.exit_code == 0
-        assert "comorbidipy version" in result.stdout
+        assert "comorbidipy version" in result.output
 
     def test_help_flag(self):
         """Test --help flag."""
         result = runner.invoke(app, ["--help"])
         assert result.exit_code == 0
-        assert "comorbidipy" in result.stdout.lower()
+        assert "comorbidipy" in result.output.lower()
 
     def test_info_command(self):
         """Test info command."""
         result = runner.invoke(app, ["info"])
         assert result.exit_code == 0
-        assert "Charlson" in result.stdout
-        assert "Elixhauser" in result.stdout
+        assert "Charlson" in result.output
+        assert "Elixhauser" in result.output
 
 
 class TestCharlsonCLI:
