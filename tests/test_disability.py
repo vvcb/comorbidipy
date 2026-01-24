@@ -13,13 +13,13 @@ class TestDisabilityInputValidation:
     def test_missing_id_column_raises_error(self):
         """Should raise KeyError when id column is missing."""
         df = pl.DataFrame({"code": ["F70", "H54"]})
-        with pytest.raises(KeyError, match="Missing column"):
+        with pytest.raises(KeyError, match="must be present"):
             disability(df, id_col="id", code_col="code")
 
     def test_missing_code_column_raises_error(self):
         """Should raise KeyError when code column is missing."""
         df = pl.DataFrame({"id": ["1", "2"]})
-        with pytest.raises(KeyError, match="Missing column"):
+        with pytest.raises(KeyError, match="must be present"):
             disability(df, id_col="id", code_col="code")
 
     def test_empty_dataframe_returns_result_with_columns(self):
