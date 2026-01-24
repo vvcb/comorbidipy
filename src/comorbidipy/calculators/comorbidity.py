@@ -240,8 +240,10 @@ def comorbidity(  # noqa: PLR0913
             10yr survival = 0.983^(e^(0.9 * comorbidity_score))
 
     """
-    # Handle LazyFrame input - collect to DataFrame
-    working_df: pl.DataFrame = df.collect() if isinstance(df, pl.LazyFrame) else df
+    # Handle LazyFrame input - collect to DataFrame with streaming for large data
+    working_df: pl.DataFrame = (
+        df.collect(streaming=True) if isinstance(df, pl.LazyFrame) else df
+    )
 
     # check the dataframe contains the required columns
     if id not in working_df.columns or code not in working_df.columns:

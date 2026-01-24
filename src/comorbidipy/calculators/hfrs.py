@@ -42,8 +42,10 @@ def hfrs(
         ... })
         >>> hfrs(df)
     """
-    # Handle LazyFrame input - collect to DataFrame
-    working_df: pl.DataFrame = df.collect() if isinstance(df, pl.LazyFrame) else df
+    # Handle LazyFrame input - collect to DataFrame with streaming for large data
+    working_df: pl.DataFrame = (
+        df.collect(streaming=True) if isinstance(df, pl.LazyFrame) else df
+    )
 
     if id_col not in working_df.columns or code_col not in working_df.columns:
         raise KeyError(f"Columns '{id_col}' and '{code_col}' must be present.")
