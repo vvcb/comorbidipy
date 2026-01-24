@@ -30,7 +30,7 @@ cmpy = "comorbidipy.cli:app"
 
 [project.urls]
 Homepage = "https://github.com/vvcb/comorbidipy"
-Repsoitory = "https://github.com/vvcb/comorbidipy"
+Repository = "https://github.com/vvcb/comorbidipy"
 Issues = "https://github.com/vvcb/comorbidipy/issues"
 Documentation = "https://vvcb.github.io/comorbidipy"
 
@@ -107,3 +107,21 @@ line-ending = "auto"
 testpaths = ["tests"]
 python_files = ["test_*.py"]
 python_functions = ["test_*"]
+
+[tool.mypy]
+python_version = "3.13"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+strict_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+show_error_codes = true
+files = ["src/comorbidipy"]
+exclude = ["tests/", "downloads/"]
+
+[[tool.mypy.overrides]]
+module = ["polars.*"]
+ignore_missing_imports = true

@@ -239,9 +239,9 @@ def charlson(
 
         result = comorbidity(
             df,
-            id=id_col,
-            code=code_col,
-            age=age_col,
+            id_col=id_col,
+            code_col=code_col,
+            age_col=age_col,
             score=ScoreType.CHARLSON,
             icd=icd_version,
             variant=mapping,
@@ -331,9 +331,9 @@ def elixhauser(
 
         result = comorbidity(
             df,
-            id=id_col,
-            code=code_col,
-            age=None,
+            id_col=id_col,
+            code_col=code_col,
+            age_col=None,
             score=ScoreType.ELIXHAUSER,
             icd=icd_version,
             variant=MappingVariant.QUAN,

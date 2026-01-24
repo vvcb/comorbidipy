@@ -196,43 +196,44 @@ def _add_age_weighting(dfp: pl.DataFrame, age: str) -> pl.DataFrame:
 
 def comorbidity(  # noqa: PLR0913
     df: pl.DataFrame | pl.LazyFrame,
-    id: str = "id",
-    code: str = "code",
-    age: str | None = None,
+    id_col: str = "id",
+    code_col: str = "code",
+    age_col: str | None = None,
     score: ScoreType = ScoreType.CHARLSON,
     icd: ICDVersion = ICDVersion.ICD10,
     variant: MappingVariant = MappingVariant.QUAN,
     weighting: WeightingVariant = WeightingVariant.QUAN,
     assign0: T_assign_zero = True,
 ) -> pl.DataFrame:
-    """Calculate Charlson and Elixhauser Comorbidity Scores from ICD codes
+    """Calculate Charlson and Elixhauser Comorbidity Scores from ICD codes.
 
     Args:
-        df (pl.DataFrame): Polars DataFrame with at least 2 columns for id and code
-        id (str, optional): Name of column with unique identifier. This may be for a
+        df: Polars DataFrame with at least 2 columns for id and code.
+        id_col: Name of column with unique identifier. This may be for a
             single patient or an episode. Defaults to "id".
-        code (str, optional): Name of column with ICD codes. Defaults to "code".
-        age (str, optional): Name of column with age. Defaults to "age". If age is not
+        code_col: Name of column with ICD codes. Defaults to "code".
+        age_col: Name of column with age. Defaults to None. If age is not
             provided, set this to None.
-        score (str, optional): One of "charlson", "elixhauser". Defaults to "charlson".
-        icd (str, optional): One of "icd9", "icd10" and descibes the version used in
-            the `code` column. Defaults to "icd10".
-        variant (str, optional): Mapping variant to use. Defaults to "quan".
-        weighting (str, optional): Weighting variant to use. Defaults to "quan".
-        assign0 (bool, optional): Should the less severe form of a comorbidity be set
+        score: One of "charlson", "elixhauser". Defaults to "charlson".
+        icd: One of "icd9", "icd10" and describes the version used in
+            the `code_col` column. Defaults to "icd10".
+        variant: Mapping variant to use. Defaults to "quan".
+        weighting: Weighting variant to use. Defaults to "quan".
+        assign0: Should the less severe form of a comorbidity be set
             to 0 if the more severe form is present. Defaults to True.
 
     Raises:
-        KeyError: Raised if `id` or `code` are not in `df.columns`.
-        KeyError: If `age` is not None and `age` is not in `df.columns`.
+        KeyError: Raised if `id_col` or `code_col` are not in `df.columns`.
+        KeyError: If `age_col` is not None and `age_col` is not in `df.columns`.
         KeyError: Raised if combination of score, icd and variant not found in
             mappings. Call comorbidipy.get_mappings() to see permitted combinations.
 
     Returns:
-        Polars DataFrame: Returns dataframe with one row per `id`. The dataframe will
-            contain comorbidities in columns as well as a `comorbidity_score` column.
-            If `score`=="charlson" and `age` is given, `age_adjusted_comorbidity_score`
-            and `survival_10yr` are calculated as below.
+        Polars DataFrame: Returns dataframe with one row per `id_col`. The dataframe
+            will contain comorbidities in columns as well as a `comorbidity_score`
+            column. If `score`=="charlson" and `age_col` is given,
+            `age_adjusted_comorbidity_score` and `survival_10yr` are calculated as
+            below.
 
         age_adjusted_comorbidity_score = comorbidity_score + 1 point for every decade
             over 40 upto a maximum of 4 points
@@ -247,19 +248,21 @@ def comorbidity(  # noqa: PLR0913
     )
 
     # check the dataframe contains the required columns
-    if id not in working_df.columns or code not in working_df.columns:
-        raise KeyError(f"Missing column(s). Ensure column(s) {id}, {code} are present.")
+    if id_col not in working_df.columns or code_col not in working_df.columns:
+        raise KeyError(
+            f"Missing column(s). Ensure column(s) {id_col}, {code_col} are present."
+        )
 
     # Drop rows with NAs in required columns
-    working_df = working_df.drop_nulls(subset=[id, code])
+    working_df = working_df.drop_nulls(subset=[id_col, code_col])
 
     # Prepare id dataframe
-    if age:
-        if age not in working_df.columns:
-            raise KeyError(f"Column age was assigned {age} but not found")
-        dfid = working_df.select(id, age).unique(subset=[id])
+    if age_col:
+        if age_col not in working_df.columns:
+            raise KeyError(f"Column age was assigned {age_col} but not found")
+        dfid = working_df.select(id_col, age_col).unique(subset=[id_col])
     else:
-        dfid = working_df.select(id).unique()
+        dfid = working_df.select(id_col).unique()
 
     score_icd_variant = f"{score}_{icd}_{variant}"
 
@@ -271,7 +274,7 @@ def comorbidity(  # noqa: PLR0913
 
     # Create reverse mapping - each code can map to multiple comorbidities
     # Build a list of all (code, comorbidity) pairs
-    codes = working_df.get_column(code).unique().to_list()
+    codes = working_df.get_column(code_col).unique().to_list()
     code_to_comorbidities = []
     for icd_code in codes:
         for comorbidity_name, icd_patterns in mapping[score_icd_variant].items():
@@ -282,20 +285,20 @@ def comorbidity(  # noqa: PLR0913
     if code_to_comorbidities:
         mapping_df = pl.DataFrame(
             code_to_comorbidities,
-            schema=[code, "mapped_code"],
+            schema=[code_col, "mapped_code"],
             orient="row",
         )
     else:
         # No codes matched - create empty mapping
-        mapping_df = pl.DataFrame(schema={code: pl.Utf8, "mapped_code": pl.Utf8})
+        mapping_df = pl.DataFrame(schema={code_col: pl.Utf8, "mapped_code": pl.Utf8})
 
     # Join with mapping to get all code->comorbidity mappings
     # This will create multiple rows for codes that map to multiple comorbidities
-    working_df = working_df.join(mapping_df, on=code, how="inner")
+    working_df = working_df.join(mapping_df, on=code_col, how="inner")
 
     # Remove duplicate (id, comorbidity) pairs - a patient should only get
     # credit once for each comorbidity even if they have multiple codes for it
-    working_df = working_df.unique(subset=[id, "mapped_code"])
+    working_df = working_df.unique(subset=[id_col, "mapped_code"])
 
     # Create pivot table: one row per ID, one column per comorbidity
     # First, add a tmp column with value 1
@@ -314,7 +317,7 @@ def comorbidity(  # noqa: PLR0913
             .alias(c),
         )
 
-    dfp = working_df.group_by(id).agg(pivot_expr)
+    dfp = working_df.group_by(id_col).agg(pivot_expr)
 
     # If a particular comorbidity does not occur at all in the dataset,
     # create a column and assign 0
@@ -327,15 +330,15 @@ def comorbidity(  # noqa: PLR0913
     dfp = _calculate_weighted_score(dfp, score_icd_variant, assign0, weighting)
 
     # Merge back into dfid, adjusting for age and calculating survival if needed
-    if score == "charlson" and weighting == "charlson" and age:
-        dfp = dfid.join(dfp, on=id, how="left").fill_null(0)
-        dfp = _add_age_weighting(dfp, age)
+    if score == "charlson" and weighting == "charlson" and age_col:
+        dfp = dfid.join(dfp, on=id_col, how="left").fill_null(0)
+        dfp = _add_age_weighting(dfp, age_col)
         # Calculate 10-year survival using native Polars expression
         # Formula: 0.983^(e^(0.9 * score))
         dfp = dfp.with_columns(
             survival_10yr=(0.983 ** (0.9 * pl.col("age_adj_comorbidity_score")).exp()),
         )
     else:
-        dfp = dfid.join(dfp, on=id, how="left").fill_null(0)
+        dfp = dfid.join(dfp, on=id_col, how="left").fill_null(0)
 
     return dfp

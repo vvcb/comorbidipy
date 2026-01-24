@@ -34,8 +34,8 @@ df = pl.DataFrame({
 # Calculate HFRS
 result = hfrs(
     df,
-    id="patient_id",
-    code="icd_code",
+    id_col="patient_id",
+    code_col="icd_code",
 )
 
 # Result includes:
@@ -51,7 +51,7 @@ result = hfrs(
 comorbidipy hfrs input.csv output.csv
 
 # With custom columns
-comorbidipy hfrs input.parquet output.parquet --id pat_id --code diagnosis
+comorbidipy hfrs input.parquet output.parquet --id-col pat_id --code-col diagnosis
 
 # Output as Parquet
 comorbidipy hfrs input.csv output.parquet
@@ -111,7 +111,7 @@ df = pl.DataFrame({
     ],
 })
 
-result = hfrs(df, id="id", code="code")
+result = hfrs(df, id_col="id", code_col="code")
 print(result)
 
 # Output:

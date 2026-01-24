@@ -65,18 +65,17 @@ df = pl.DataFrame({
 # Basic calculation
 result = comorbidity(
     df,
-    id="id",
-    code="code",
+    id_col="id",
+    code_col="code",
     score=ScoreType.CHARLSON,
-    age=None,
 )
 
 # With age adjustment
 result = comorbidity(
     df,
-    id="id",
-    code="code",
-    age="age",
+    id_col="id",
+    code_col="code",
+    age_col="age",
     score=ScoreType.CHARLSON,
     weighting=WeightingVariant.CHARLSON,
 )
@@ -84,11 +83,10 @@ result = comorbidity(
 # Using Swedish mapping
 result = comorbidity(
     df,
-    id="id",
-    code="code",
+    id_col="id",
+    code_col="code",
     score=ScoreType.CHARLSON,
     variant=MappingVariant.SWEDISH,
-    age=None,
 )
 ```
 
@@ -133,7 +131,7 @@ By default (`assign0=True`), when a more severe form of a condition is present, 
 To keep both forms:
 
 ```python
-result = comorbidity(df, assign0=False, age=None)
+result = comorbidity(df, assign0=False)
 ```
 
 ## Output

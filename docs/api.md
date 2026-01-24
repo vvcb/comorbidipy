@@ -11,31 +11,31 @@ Calculate Charlson or Elixhauser comorbidity scores.
 ```python
 def comorbidity(
     df: pl.DataFrame | pl.LazyFrame,
-    id: str = "id",
-    code: str = "code",
+    id_col: str = "id",
+    code_col: str = "code",
+    age_col: str | None = None,
     score: ScoreType = ScoreType.CHARLSON,
     icd: ICDVersion = ICDVersion.ICD10,
     variant: MappingVariant = MappingVariant.QUAN,
     weighting: WeightingVariant = WeightingVariant.CHARLSON,
     assign0: bool = True,
-    age: str | None = None,
 ) -> pl.DataFrame:
     """
     Calculate comorbidity scores from ICD diagnosis codes.
 
     Args:
         df: DataFrame with patient IDs and ICD codes.
-        id: Name of the column containing patient identifiers.
-        code: Name of the column containing ICD codes.
+        id_col: Name of the column containing patient identifiers.
+        code_col: Name of the column containing ICD codes.
+        age_col: Name of the column containing patient age (optional).
+            When provided with Charlson score and Charlson weights,
+            enables age adjustment and survival calculation.
         score: Type of comorbidity score (CHARLSON or ELIXHAUSER).
         icd: Version of ICD codes (ICD9 or ICD10).
         variant: Mapping variant for ICD code classification.
         weighting: Weighting scheme for calculating the score.
         assign0: Whether to zero out less severe conditions when
             more severe forms are present.
-        age: Name of the column containing patient age (optional).
-            When provided with Charlson score and Charlson weights,
-            enables age adjustment and survival calculation.
 
     Returns:
         DataFrame with patient IDs, binary comorbidity flags,
@@ -61,10 +61,10 @@ df = pl.DataFrame({
 
 result = comorbidity(
     df,
-    id="patient_id",
-    code="diagnosis",
+    id_col="patient_id",
+    code_col="diagnosis",
+    age_col="patient_age",
     score=ScoreType.CHARLSON,
-    age="patient_age",
 )
 ```
 
@@ -77,8 +77,8 @@ Calculate Hospital Frailty Risk Score.
 ```python
 def hfrs(
     df: pl.DataFrame | pl.LazyFrame,
-    id: str = "id",
-    code: str = "code",
+    id_col: str = "id",
+    code_col: str = "code",
 ) -> pl.DataFrame:
     """
     Calculate Hospital Frailty Risk Score from ICD-10 codes.
@@ -88,8 +88,8 @@ def hfrs(
 
     Args:
         df: DataFrame with patient IDs and ICD-10 codes.
-        id: Name of the column containing patient identifiers.
-        code: Name of the column containing ICD codes.
+        id_col: Name of the column containing patient identifiers.
+        code_col: Name of the column containing ICD codes.
 
     Returns:
         DataFrame with columns:
@@ -116,7 +116,7 @@ df = pl.DataFrame({
     "code": ["F00", "R26", "J18"],
 })
 
-result = hfrs(df, id="id", code="code")
+result = hfrs(df, id_col="id", code_col="code")
 ```
 
 ---
@@ -128,8 +128,8 @@ Identify learning disabilities and sensory impairments.
 ```python
 def disability(
     df: pl.DataFrame | pl.LazyFrame,
-    id: str = "id",
-    code: str = "code",
+    id_col: str = "id",
+    code_col: str = "code",
 ) -> pl.DataFrame:
     """
     Identify learning disabilities and sensory impairments from ICD-10 codes.
@@ -141,8 +141,8 @@ def disability(
 
     Args:
         df: DataFrame with patient IDs and ICD-10 codes.
-        id: Name of the column containing patient identifiers.
-        code: Name of the column containing ICD codes.
+        id_col: Name of the column containing patient identifiers.
+        code_col: Name of the column containing ICD codes.
 
     Returns:
         DataFrame with columns:
@@ -167,7 +167,7 @@ df = pl.DataFrame({
     "code": ["F70", "H90"],
 })
 
-result = disability(df, id="id", code="code")
+result = disability(df, id_col="id", code_col="code")
 ```
 
 ---
@@ -225,7 +225,7 @@ class WeightingVariant(StrEnum):
     QUAN = "quan"
     SHMI = "shmi"
     SHMI_MODIFIED = "shmi_modified"
-    VAN_WALRAVEN = "vanwalraven"
+    VAN_WALRAVEN = "van_walraven"
     SWISS = "swiss"
 ```
 
@@ -270,7 +270,7 @@ from comorbidipy import comorbidity
 
 # LazyFrame for memory-efficient processing
 lf = pl.scan_parquet("large_file.parquet")
-result = comorbidity(lf, id="id", code="code", age=None)
+result = comorbidity(lf, id_col="id", code_col="code")
 ```
 
 When a `LazyFrame` is passed, the function will:
@@ -290,7 +290,7 @@ import polars as pl
 df = pl.DataFrame({"wrong_col": ["P001"], "also_wrong": ["I21"]})
 
 try:
-    result = comorbidity(df, id="patient_id", code="code", age=None)
+    result = comorbidity(df, id_col="patient_id", code_col="code")
 except KeyError as e:
     print(f"Missing column: {e}")
 ```
