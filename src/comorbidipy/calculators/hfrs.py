@@ -76,10 +76,21 @@ def hfrs(
         pl.col("mapped_code").replace_strict(hfrs_mapping).alias("hfrs")
     )
 
-    working_df = working_df.group_by(id_col).agg(pl.sum("hfrs"))
+    working_df = working_df.group_by(id_col).agg(pl.sum("hfrs").alias("hfrs_score"))
 
     # Merge back into original list of IDs, fill missing with 0
     result = dfid.join(working_df, on=id_col, how="left").fill_null(0)
+
+    # Add risk category based on HFRS thresholds:
+    # < 5: Low risk, 5-15: Intermediate risk, > 15: High risk
+    result = result.with_columns(
+        pl.when(pl.col("hfrs_score") < 5)
+        .then(pl.lit("Low"))
+        .when(pl.col("hfrs_score") <= 15)
+        .then(pl.lit("Intermediate"))
+        .otherwise(pl.lit("High"))
+        .alias("hfrs_category")
+    )
 
     logger.debug(f"HFRS calculation complete. Output: {result.height} patients")
 

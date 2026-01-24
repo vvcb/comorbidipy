@@ -16,7 +16,7 @@ The Elixhauser index was developed in 1998 as a more comprehensive alternative t
 
 | Weighting | Description |
 |-----------|-------------|
-| `vanwalraven` | van Walraven et al. (2009) - mortality prediction |
+| `van_walraven` | van Walraven et al. (2009) - mortality prediction |
 | `swiss` | Swiss adaptation for mortality prediction |
 
 ## Comorbidity Categories
@@ -73,30 +73,27 @@ df = pl.DataFrame({
 # Basic Elixhauser calculation
 result = comorbidity(
     df,
-    id="patient_id",
-    code="icd_code",
+    id_col="patient_id",
+    code_col="icd_code",
     score=ScoreType.ELIXHAUSER,
-    age=None,
 )
 
 # With van Walraven weights
 result = comorbidity(
     df,
-    id="patient_id",
-    code="icd_code",
+    id_col="patient_id",
+    code_col="icd_code",
     score=ScoreType.ELIXHAUSER,
     weighting=WeightingVariant.VAN_WALRAVEN,
-    age=None,
 )
 
 # With Swiss weights
 result = comorbidity(
     df,
-    id="patient_id",
-    code="icd_code",
+    id_col="patient_id",
+    code_col="icd_code",
     score=ScoreType.ELIXHAUSER,
     weighting=WeightingVariant.SWISS,
-    age=None,
 )
 ```
 
@@ -107,7 +104,7 @@ result = comorbidity(
 comorbidipy elixhauser input.csv output.csv
 
 # With van Walraven weights
-comorbidipy elixhauser input.parquet output.parquet --weights vanwalraven
+comorbidipy elixhauser input.parquet output.parquet --weights van_walraven
 
 # With Swiss weights
 comorbidipy elixhauser input.csv output.csv --weights swiss
@@ -124,7 +121,7 @@ By default (`assign0=True`), when a more severe or complicated form of a conditi
 To keep both forms:
 
 ```python
-result = comorbidity(df, assign0=False, age=None)
+result = comorbidity(df, assign0=False)
 ```
 
 ## Output

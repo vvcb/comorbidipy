@@ -59,8 +59,8 @@ df = pl.DataFrame({
 # Identify impairments
 result = disability(
     df,
-    id="patient_id",
-    code="icd_code",
+    id_col="patient_id",
+    code_col="icd_code",
 )
 
 # Result includes binary columns for each impairment type
@@ -73,7 +73,7 @@ result = disability(
 comorbidipy disability input.csv output.csv
 
 # With custom columns
-comorbidipy disability input.parquet output.parquet --id pat_id --code diagnosis
+comorbidipy disability input.parquet output.parquet --id-col pat_id --code-col diagnosis
 
 # Output as Parquet
 comorbidipy disability input.csv output.parquet
@@ -109,7 +109,7 @@ df = pl.DataFrame({
     ],
 })
 
-result = disability(df, id="id", code="code")
+result = disability(df, id_col="id", code_col="code")
 print(result)
 
 # Output:

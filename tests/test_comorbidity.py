@@ -20,19 +20,19 @@ class TestComorbidityInputValidation:
         """Should raise KeyError when id column is missing."""
         df = pl.DataFrame({"code": ["I21", "I50"]})
         with pytest.raises(KeyError, match="Missing column"):
-            comorbidity(df, id="id", code="code")
+            comorbidity(df, id_col="id", code_col="code")
 
     def test_missing_code_column_raises_error(self):
         """Should raise KeyError when code column is missing."""
         df = pl.DataFrame({"id": ["1", "2"]})
         with pytest.raises(KeyError, match="Missing column"):
-            comorbidity(df, id="id", code="code")
+            comorbidity(df, id_col="id", code_col="code")
 
     def test_missing_age_column_raises_error(self):
         """Should raise KeyError when age column specified but missing."""
         df = pl.DataFrame({"id": ["1", "2"], "code": ["I21", "I50"]})
         with pytest.raises(KeyError, match="age"):
-            comorbidity(df, id="id", code="code", age="age")
+            comorbidity(df, id_col="id", code_col="code", age_col="age")
 
     def test_invalid_mapping_variant_raises_error(self):
         """Should raise KeyError for invalid score/icd/variant combination."""
@@ -43,7 +43,7 @@ class TestComorbidityInputValidation:
                 score=ScoreType.CHARLSON,
                 icd=ICDVersion.ICD9,
                 variant=MappingVariant.SWEDISH,  # Swedish only available for ICD10
-                age=None,
+                age_col=None,
             )
 
     def test_empty_dataframe_returns_empty_result(self):
@@ -51,7 +51,7 @@ class TestComorbidityInputValidation:
         df = pl.DataFrame(
             {"id": pl.Series([], dtype=pl.Utf8), "code": pl.Series([], dtype=pl.Utf8)}
         )
-        result = comorbidity(df, id="id", code="code", age=None)
+        result = comorbidity(df, id_col="id", code_col="code", age_col=None)
         assert result.height == 0
 
 
@@ -68,9 +68,9 @@ class TestCharlsonScore:
         )
         result = comorbidity(
             df,
-            id="id",
-            code="code",
-            age=None,
+            id_col="id",
+            code_col="code",
+            age_col=None,
             score=ScoreType.CHARLSON,
             icd=ICDVersion.ICD10,
             variant=MappingVariant.QUAN,
@@ -106,9 +106,9 @@ class TestCharlsonScore:
         )
         result = comorbidity(
             df,
-            id="id",
-            code="code",
-            age="age",
+            id_col="id",
+            code_col="code",
+            age_col="age",
             score=ScoreType.CHARLSON,
             icd=ICDVersion.ICD10,
             variant=MappingVariant.QUAN,
@@ -134,9 +134,9 @@ class TestCharlsonScore:
         )
         result = comorbidity(
             df,
-            id="id",
-            code="code",
-            age=None,
+            id_col="id",
+            code_col="code",
+            age_col=None,
             assign0=True,
         )
 
@@ -154,9 +154,9 @@ class TestCharlsonScore:
         )
         result = comorbidity(
             df,
-            id="id",
-            code="code",
-            age=None,
+            id_col="id",
+            code_col="code",
+            age_col=None,
             assign0=True,
         )
 
@@ -174,9 +174,9 @@ class TestCharlsonScore:
         )
         result = comorbidity(
             df,
-            id="id",
-            code="code",
-            age=None,
+            id_col="id",
+            code_col="code",
+            age_col=None,
             assign0=True,
         )
 
@@ -194,9 +194,9 @@ class TestCharlsonScore:
         )
         result = comorbidity(
             df,
-            id="id",
-            code="code",
-            age=None,
+            id_col="id",
+            code_col="code",
+            age_col=None,
             assign0=False,
         )
 
@@ -223,7 +223,7 @@ class TestCharlsonScore:
                 score=ScoreType.CHARLSON,
                 icd=ICDVersion.ICD10,
                 variant=variant,
-                age=None,
+                age_col=None,
             )
             assert result.height == 1
             assert "comorbidity_score" in result.columns
@@ -242,7 +242,7 @@ class TestCharlsonScore:
             result = comorbidity(
                 df,
                 weighting=weight,
-                age=None,
+                age_col=None,
             )
             results[weight] = result["comorbidity_score"][0]
 
@@ -264,9 +264,9 @@ class TestElixhauserScore:
         )
         result = comorbidity(
             df,
-            id="id",
-            code="code",
-            age=None,
+            id_col="id",
+            code_col="code",
+            age_col=None,
             score=ScoreType.ELIXHAUSER,
             icd=ICDVersion.ICD10,
             variant=MappingVariant.QUAN,
@@ -289,7 +289,7 @@ class TestElixhauserScore:
             score=ScoreType.ELIXHAUSER,
             weighting=WeightingVariant.VAN_WALRAVEN,
             assign0=True,
-            age=None,
+            age_col=None,
         )
 
         # hypunc should be 0 because hypc is present
@@ -303,7 +303,7 @@ class TestSyntheticData:
     def test_charlson_with_synthetic_data(self):
         """Test Charlson calculation with synthetic data."""
         df = generate_charlson_data(n_patients=100, seed=42)
-        result = comorbidity(df, age="age")
+        result = comorbidity(df, age_col="age")
 
         assert result.height == 100
         assert "comorbidity_score" in result.columns
@@ -317,7 +317,7 @@ class TestSyntheticData:
                 "code": ["I21", "I21", "I50", "I50"],  # Duplicate codes
             }
         )
-        result = comorbidity(df, age=None)
+        result = comorbidity(df, age_col=None)
 
         assert result.height == 1
         assert result["ami"][0] == 1
@@ -331,7 +331,7 @@ class TestSyntheticData:
                 "code": ["I21", None, "I50", "J44"],
             }
         )
-        result = comorbidity(df, age=None)
+        result = comorbidity(df, age_col=None)
 
         # Only patients with valid id and code should be included
         assert result.height <= 3
@@ -343,7 +343,7 @@ class TestPerformance:
     def test_large_dataset(self):
         """Test performance with moderately large dataset."""
         df = generate_charlson_data(n_patients=10_000, seed=42)
-        result = comorbidity(df, age="age")
+        result = comorbidity(df, age_col="age")
 
         assert result.height == 10_000
         assert "comorbidity_score" in result.columns
@@ -363,9 +363,9 @@ class TestNegativeScores:
         )
         result = comorbidity(
             df,
-            id="id",
-            code="code",
-            age=None,
+            id_col="id",
+            code_col="code",
+            age_col=None,
             score=ScoreType.ELIXHAUSER,
             icd=ICDVersion.ICD10,
             variant=MappingVariant.QUAN,
@@ -389,7 +389,7 @@ class TestNegativeScores:
             df,
             score=ScoreType.ELIXHAUSER,
             weighting=WeightingVariant.VAN_WALRAVEN,
-            age=None,
+            age_col=None,
         )
 
         # Total should be -7 + (-4) + (-3) = -14
@@ -408,7 +408,7 @@ class TestNegativeScores:
             df,
             score=ScoreType.ELIXHAUSER,
             weighting=WeightingVariant.SWISS,
-            age=None,
+            age_col=None,
         )
 
         # Should return -5, not 0
@@ -427,7 +427,7 @@ class TestNegativeScores:
             df,
             score=ScoreType.CHARLSON,
             weighting=WeightingVariant.SHMI,
-            age=None,
+            age_col=None,
         )
 
         # SHMI should clamp to 0
@@ -447,7 +447,7 @@ class TestNegativeScores:
             df,
             score=ScoreType.CHARLSON,
             weighting=WeightingVariant.SHMI_MODIFIED,
-            age=None,
+            age_col=None,
         )
 
         # SHMI modified has positive weight (4) for diabwc
@@ -466,7 +466,7 @@ class TestNegativeScores:
             df,
             score=ScoreType.ELIXHAUSER,
             weighting=WeightingVariant.VAN_WALRAVEN,
-            age=None,
+            age_col=None,
         )
 
         # Should be 7 + (-7) = 0
@@ -485,7 +485,7 @@ class TestNegativeScores:
             df,
             score=ScoreType.ELIXHAUSER,
             weighting=WeightingVariant.VAN_WALRAVEN,
-            age=None,
+            age_col=None,
         )
 
         # Should be 7 + (-7) + (-4) = -4

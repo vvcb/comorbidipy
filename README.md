@@ -41,13 +41,13 @@ df = pl.DataFrame({
 })
 
 # Calculate Charlson Comorbidity Index
-result = comorbidity(df, id="id", code="code", age="age")
+result = comorbidity(df, id_col="id", code_col="code", age_col="age")
 
 # Calculate Hospital Frailty Risk Score
-frailty = hfrs(df, id="id", code="code")
+frailty = hfrs(df, id_col="id", code_col="code")
 
 # Identify disabilities
-disabilities = disability(df, id="id", code="code")
+disabilities = disability(df, id_col="id", code_col="code")
 ```
 
 ### Command Line Interface
@@ -57,7 +57,7 @@ disabilities = disability(df, id="id", code="code")
 comorbidipy charlson input.csv output.csv --age-col age
 
 # Elixhauser score
-comorbidipy elixhauser input.parquet output.parquet --weights vanwalraven
+comorbidipy elixhauser input.parquet output.parquet --weights van_walraven
 
 # Hospital Frailty Risk Score
 comorbidipy hfrs input.csv output.csv

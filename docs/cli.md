@@ -37,8 +37,8 @@ All commands support these common options:
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `--id` | `id` | Column name containing patient identifiers |
-| `--code` | `code` | Column name containing ICD codes |
+| `--id-col` / `-i` | `id` | Column name containing patient identifiers |
+| `--code-col` / `-c` | `code` | Column name containing ICD codes |
 | `--verbose` / `-v` | False | Enable verbose logging |
 
 ## Commands
@@ -90,7 +90,7 @@ comorbidipy elixhauser [OPTIONS] INPUT OUTPUT
 
 | Option | Default | Description |
 |--------|---------|-------------|
-| `--weights` | `vanwalraven` | Weighting scheme: vanwalraven, swiss |
+| `--weights` | `van_walraven` | Weighting scheme: van_walraven, swiss |
 | `--icd-version` | `10` | ICD version: 9 or 10 |
 | `--no-assign0` | False | Don't zero out less severe conditions |
 
@@ -119,7 +119,7 @@ comorbidipy hfrs [OPTIONS] INPUT OUTPUT
 comorbidipy hfrs admissions.csv frailty.csv
 
 # Custom column names
-comorbidipy hfrs data.parquet results.parquet --id patient_id --code diagnosis
+comorbidipy hfrs data.parquet results.parquet --id-col patient_id --code-col diagnosis
 ```
 
 ### disability

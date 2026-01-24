@@ -45,9 +45,9 @@ from comorbidipy import comorbidity, ScoreType, MappingVariant, WeightingVariant
 
 result = comorbidity(
     df,
-    id="id",
-    code="code",
-    age="age",  # Optional - enables age-adjusted score
+    id_col="id",
+    code_col="code",
+    age_col="age",  # Optional - enables age-adjusted score
     score=ScoreType.CHARLSON,
     variant=MappingVariant.QUAN,
     weighting=WeightingVariant.CHARLSON,
@@ -61,11 +61,10 @@ print(result)
 ```python
 result = comorbidity(
     df,
-    id="id",
-    code="code",
+    id_col="id",
+    code_col="code",
     score=ScoreType.ELIXHAUSER,
     weighting=WeightingVariant.VAN_WALRAVEN,
-    age=None,  # Elixhauser doesn't use age adjustment
 )
 ```
 

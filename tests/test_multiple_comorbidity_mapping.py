@@ -25,8 +25,8 @@ class TestMultipleComorbidityMapping:
 
         result = comorbidity(
             df,
-            id="id",
-            code="code",
+            id_col="id",
+            code_col="code",
             score=ScoreType.ELIXHAUSER,
             icd=ICDVersion.ICD10,
             variant=MappingVariant.QUAN,
@@ -43,8 +43,8 @@ class TestMultipleComorbidityMapping:
 
         result = comorbidity(
             df,
-            id="id",
-            code="code",
+            id_col="id",
+            code_col="code",
             score=ScoreType.ELIXHAUSER,
             icd=ICDVersion.ICD10,
             variant=MappingVariant.QUAN,
@@ -61,8 +61,8 @@ class TestMultipleComorbidityMapping:
 
         result = comorbidity(
             df,
-            id="id",
-            code="code",
+            id_col="id",
+            code_col="code",
             score=ScoreType.ELIXHAUSER,
             icd=ICDVersion.ICD10,
             variant=MappingVariant.QUAN,
@@ -83,8 +83,8 @@ class TestMultipleComorbidityMapping:
 
         result = comorbidity(
             df,
-            id="id",
-            code="code",
+            id_col="id",
+            code_col="code",
             score=ScoreType.ELIXHAUSER,
             icd=ICDVersion.ICD10,
             variant=MappingVariant.QUAN,
@@ -102,9 +102,9 @@ class TestMultipleComorbidityMapping:
         # Check the score calculation
         # Swiss weights: alcohol=-3, chf=13, cpd=3, depre=-3, pcd=6, psycho=-4
         expected_score = -3 + 13 + 3 + (-3) + 6 + (-4)
-        assert (
-            result["comorbidity_score"][0] == expected_score
-        ), f"Score should be {expected_score}"
+        assert result["comorbidity_score"][0] == expected_score, (
+            f"Score should be {expected_score}"
+        )
 
     def test_charlson_icd9_quan_40403_maps_to_chf_and_rend(self):
         """ICD9 code 40403 should map to both CHF and renal disease."""
@@ -112,8 +112,8 @@ class TestMultipleComorbidityMapping:
 
         result = comorbidity(
             df,
-            id="id",
-            code="code",
+            id_col="id",
+            code_col="code",
             score=ScoreType.CHARLSON,
             icd=ICDVersion.ICD9,
             variant=MappingVariant.QUAN,
@@ -130,8 +130,8 @@ class TestMultipleComorbidityMapping:
 
         result = comorbidity(
             df,
-            id="id",
-            code="code",
+            id_col="id",
+            code_col="code",
             score=ScoreType.ELIXHAUSER,
             icd=ICDVersion.ICD9,
             variant=MappingVariant.QUAN,
@@ -148,8 +148,8 @@ class TestMultipleComorbidityMapping:
 
         result = comorbidity(
             df,
-            id="id",
-            code="code",
+            id_col="id",
+            code_col="code",
             score=ScoreType.ELIXHAUSER,
             icd=ICDVersion.ICD9,
             variant=MappingVariant.QUAN,
@@ -161,7 +161,7 @@ class TestMultipleComorbidityMapping:
         assert result["alcohol"][0] == 1, "4255 should map to alcohol"
 
     def test_multiple_patients_with_overlapping_codes(self):
-        """Test multiple patients where some have codes mapping to multiple comorbidities."""
+        """Test multiple patients where some have codes mapping to multiple comorbidities."""  # noqa: E501
         df = pl.DataFrame(
             {
                 "id": [1, 1, 2, 2, 3],
@@ -171,8 +171,8 @@ class TestMultipleComorbidityMapping:
 
         result = comorbidity(
             df,
-            id="id",
-            code="code",
+            id_col="id",
+            code_col="code",
             score=ScoreType.ELIXHAUSER,
             icd=ICDVersion.ICD10,
             variant=MappingVariant.QUAN,
@@ -206,8 +206,8 @@ class TestMultipleComorbidityMapping:
 
         result = comorbidity(
             df,
-            id="id",
-            code="code",
+            id_col="id",
+            code_col="code",
             score=ScoreType.ELIXHAUSER,
             icd=ICDVersion.ICD10,
             variant=MappingVariant.QUAN,

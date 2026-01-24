@@ -184,7 +184,7 @@ class TestHFRSCLI:
             assert output_path.exists()
 
             output_df = pl.read_csv(output_path)
-            assert "hfrs" in output_df.columns
+            assert "hfrs_score" in output_df.columns
 
 
 class TestDisabilityCLI:
