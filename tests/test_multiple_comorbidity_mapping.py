@@ -1,7 +1,6 @@
 """Tests for ICD codes that map to multiple comorbidities."""
 
 import polars as pl
-import pytest
 
 from comorbidipy import (
     ICDVersion,
