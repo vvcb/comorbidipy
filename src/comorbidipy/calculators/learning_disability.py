@@ -1,6 +1,6 @@
 import polars as pl
 
-from ..mapping import impairments
+from ..codemaps.mapping import impairments
 
 
 def disability(df: pl.DataFrame, id: str = "id", code: str = "code") -> pl.DataFrame:
@@ -36,7 +36,9 @@ def disability(df: pl.DataFrame, id: str = "id", code: str = "code") -> pl.DataF
 
     # Keep only codes that are in mapping
     df = df.with_columns(
-        pl.col(code).map_dict(reverse_mapping, default=None).alias("mapped_code"),
+        pl.col(code)
+        .replace_strict(reverse_mapping, default=None, return_dtype=pl.Utf8)
+        .alias("mapped_code"),
     )
 
     df = df.filter(pl.col("mapped_code").is_not_null()).unique(
@@ -52,9 +54,11 @@ def disability(df: pl.DataFrame, id: str = "id", code: str = "code") -> pl.DataF
 
     for c in unique_impairments:
         pivot_expr.append(
-            pl.max(
-                pl.when(pl.col("mapped_code") == c).then(pl.col("tmp")).otherwise(0),
-            ).alias(c),
+            pl.when(pl.col("mapped_code") == c)
+            .then(pl.col("tmp"))
+            .otherwise(0)
+            .max()
+            .alias(c),
         )
 
     df = df.group_by(id).agg(pivot_expr)
