@@ -269,21 +269,32 @@ def comorbidity(  # noqa: PLR0913
             f"Allowed score_icd_variant combinations are {list(mapping)}",
         )
 
-    # Create reverse mapping dictionary
+    # Create reverse mapping - each code can map to multiple comorbidities
+    # Build a list of all (code, comorbidity) pairs
     codes = working_df.get_column(code).unique().to_list()
-    reverse_mapping = {
-        i: k
-        for i in codes
-        for k, v in mapping[score_icd_variant].items()
-        if i.startswith(tuple(v))
-    }
+    code_to_comorbidities = []
+    for icd_code in codes:
+        for comorbidity_name, icd_patterns in mapping[score_icd_variant].items():
+            if icd_code.startswith(tuple(icd_patterns)):
+                code_to_comorbidities.append((icd_code, comorbidity_name))
 
-    # Keep only codes that are in mapping
-    working_df = working_df.with_columns(
-        pl.col(code).replace_strict(reverse_mapping, default=None).alias("mapped_code"),
-    )
+    # Create a mapping dataframe
+    if code_to_comorbidities:
+        mapping_df = pl.DataFrame(
+            code_to_comorbidities,
+            schema=[code, "mapped_code"],
+            orient="row",
+        )
+    else:
+        # No codes matched - create empty mapping
+        mapping_df = pl.DataFrame(schema={code: pl.Utf8, "mapped_code": pl.Utf8})
 
-    working_df = working_df.filter(pl.col("mapped_code").is_not_null())
+    # Join with mapping to get all code->comorbidity mappings
+    # This will create multiple rows for codes that map to multiple comorbidities
+    working_df = working_df.join(mapping_df, on=code, how="inner")
+
+    # Remove duplicate (id, comorbidity) pairs - a patient should only get
+    # credit once for each comorbidity even if they have multiple codes for it
     working_df = working_df.unique(subset=[id, "mapped_code"])
 
     # Create pivot table: one row per ID, one column per comorbidity
