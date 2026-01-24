@@ -1,1 +1,60 @@
-site_name: My Docs
+site_name: comorbidipy
+site_description: Python package to calculate comorbidity scores and clinical risk scores from ICD codes
+site_author: vvcb
+site_url: https://vvcb.github.io/comorbidipy
+
+repo_name: vvcb/comorbidipy
+repo_url: https://github.com/vvcb/comorbidipy
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - toc.integrate
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+
+plugins:
+  - search
+  - git-authors
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.details
+  - attr_list
+  - md_in_html
+  - tables
+
+nav:
+  - Home: index.md
+  - Getting Started: getting-started.md
+  - Calculators:
+    - Charlson Comorbidity Index: calculators/charlson.md
+    - Elixhauser Comorbidity Index: calculators/elixhauser.md
+    - Hospital Frailty Risk Score: calculators/hfrs.md
+    - Disability & Impairments: calculators/disability.md
+  - CLI Reference: cli.md
+  - API Reference: api.md
+  - Contributing: contributing.md

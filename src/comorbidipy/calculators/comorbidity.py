@@ -1,4 +1,6 @@
-import math
+"""Charlson and Elixhauser comorbidity score calculators."""
+
+import logging
 from enum import StrEnum
 from typing import Annotated
 
@@ -7,6 +9,8 @@ import polars as pl
 from comorbidipy.codemaps.mapping import mapping
 
 from ..codemaps.weights import weights
+
+logger = logging.getLogger(__name__)
 
 
 class ICDVersion(StrEnum):
@@ -150,13 +154,10 @@ def _calculate_weighted_score(
     assign0: bool,
     weighting: str,
 ) -> pl.DataFrame:
-    # Create a copy of the supplied dataframe first
-    df = dfp.clone()
-
     # if assign0 is True, set the less severe of the comorbidities to 0
     # if the more severe form is present
     if assign0:
-        df = _assignzero(df, param_score)
+        dfp = _assignzero(dfp, param_score)
 
     # Get the weights as a dictionary
     w = weights[param_score][weighting]
@@ -164,10 +165,10 @@ def _calculate_weighted_score(
     # Calculate comorbidity score by multiplying each column with its weight and summing
     score = pl.lit(0.0)
     for col, weight in w.items():
-        if col in df.columns:
-            score = score + (df[col] * weight)
+        if col in dfp.columns:
+            score = score + (dfp[col] * weight)
 
-    # Add comorbidity score to the original dataframe
+    # Add comorbidity score to the dataframe
     dfp = dfp.with_columns(comorbidity_score=score)
 
     # If sum of weights is less than zero, set it to zero (this only applies to UK SHMI)
@@ -273,7 +274,7 @@ def comorbidity(  # noqa: PLR0913
 
     # Keep only codes that are in mapping
     df = df.with_columns(
-        pl.col(code).map_dict(reverse_mapping, default=None).alias("mapped_code"),
+        pl.col(code).replace_strict(reverse_mapping, default=None).alias("mapped_code"),
     )
 
     df = df.filter(pl.col("mapped_code").is_not_null())
@@ -289,9 +290,11 @@ def comorbidity(  # noqa: PLR0913
 
     for c in unique_codes:
         pivot_expr.append(
-            pl.max(
-                pl.when(pl.col("mapped_code") == c).then(pl.col("tmp")).otherwise(0),
-            ).alias(c),
+            pl.when(pl.col("mapped_code") == c)
+            .then(pl.col("tmp"))
+            .otherwise(0)
+            .max()
+            .alias(c),
         )
 
     dfp = df.group_by(id).agg(pivot_expr)
@@ -310,24 +313,12 @@ def comorbidity(  # noqa: PLR0913
     if score == "charlson" and weighting == "charlson" and age:
         dfp = dfid.join(dfp, on=id, how="left").fill_null(0)
         dfp = _add_age_weighting(dfp, age)
+        # Calculate 10-year survival using native Polars expression
+        # Formula: 0.983^(e^(0.9 * score))
         dfp = dfp.with_columns(
-            survival_10yr=pl.col("age_adj_comorbidity_score").map_elements(
-                lambda x: 0.983 ** math.exp(0.9 * x),
-            ),
+            survival_10yr=(0.983 ** (0.9 * pl.col("age_adj_comorbidity_score")).exp()),
         )
     else:
         dfp = dfid.join(dfp, on=id, how="left").fill_null(0)
 
-    # Add metadata to dataframe
-    # Note: Polars doesn't have attrs like pandas.
-    # So we'll have to return the metadata separately.
-    # metadata = {
-    #     "score": score,
-    #     "icd": icd,
-    #     "variant": variant,
-    #     "weighting": weighting,
-    #     "assign0": assign0,
-    # }
-
-    # Return the dataframe
     return dfp
