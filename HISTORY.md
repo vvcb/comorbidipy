@@ -1,5 +1,27 @@
 # Changelog
 
+## 0.8.0 (2026-01-24)
+
+### Bug Fixes
+
+- **Fix ICD codes mapping to multiple comorbidities** - Correctly handles ICD codes that map to more than one comorbidity category (#38)
+- **Fix negative score handling for non-SHMI weightings** - Scores are now correctly calculated when using Charlson or Quan weightings (#37)
+
+### Code Quality
+
+- **Increased test coverage from 91% to 99%** - Added extended test suites for CLI and comorbidity calculations
+- **Use WeightingVariant enum constants** - Replaced string literals with proper enum constants for type safety
+- **Removed deprecated main.py** - Cleaned up unused module
+- **Removed pandas-specific ruff lint rule** - Updated linting configuration
+
+### Documentation
+
+- **Updated API documentation** - Improved examples and parameter descriptions
+- **Updated getting-started guide** - Enhanced onboarding documentation
+- **Updated calculator documentation** - Refreshed Charlson, Elixhauser, HFRS, and Disability guides
+- **Updated CLI documentation** - Improved command-line usage examples
+- **Updated badges in index.md** - Refreshed project status badges
+
 ## 0.7.0 (2026-01-24)
 
 ### Breaking Changes
