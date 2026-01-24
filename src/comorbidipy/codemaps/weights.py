@@ -1,7 +1,7 @@
 # Empty list
 from .mapping import mapping
 
-weights = {}
+weights: dict[str, dict[str, dict[str, int]]] = {}
 
 for w in mapping:
     weights[w] = {}

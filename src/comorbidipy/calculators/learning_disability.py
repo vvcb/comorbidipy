@@ -1,58 +1,95 @@
+"""Disability and sensory impairments identifier from ICD codes."""
+
+import logging
+
 import polars as pl
 
 from ..codemaps.mapping import impairments
 
+logger = logging.getLogger(__name__)
 
-def disability(df: pl.DataFrame, id: str = "id", code: str = "code") -> pl.DataFrame:
-    """Identify disabilities and sensory impairments from ICD10 codes
+# Pre-compute reverse mapping at module load for performance
+_IMPAIRMENT_PREFIXES: dict[str, tuple[str, ...]] = {
+    k: tuple(v) for k, v in impairments.items()
+}
+
+
+def disability(
+    df: pl.DataFrame | pl.LazyFrame,
+    id_col: str = "id",
+    code_col: str = "code",
+) -> pl.DataFrame:
+    """Identify disabilities and sensory impairments from ICD-10 codes.
 
     Args:
-        df (pl.DataFrame): Polars dataframe containing at least id and code columns
-        id (str, optional): Name of column containing patient identifier. Defaults to
-            "id".
-        code (str, optional): Name of column containing ICD10 codes. Defaults to
-            "code".
-
-    Raises:
-        KeyError: Error is raised if id or code columns are not present in dataframe.
+        df: DataFrame with patient IDs and ICD-10 codes.
+        id_col: Name of column containing patient identifiers.
+        code_col: Name of column containing ICD-10 codes.
 
     Returns:
-        Polars DataFrame: Polars DataFrame with id and various
-            disabilities/impairments columns coded as 0 or 1.
+        DataFrame with patient IDs and binary columns for each impairment type.
+
+    Raises:
+        KeyError: If required columns are missing from the input DataFrame.
+
+    Example:
+        >>> import polars as pl
+        >>> from comorbidipy import disability
+        >>> df = pl.DataFrame({
+        ...     "id": [1, 1, 2],
+        ...     "code": ["F70", "H54", "F71"]
+        ... })
+        >>> disability(df)
     """
+    # Handle LazyFrame input - collect to DataFrame with streaming for large data
+    working_df: pl.DataFrame = (
+        df.collect(engine="streaming") if isinstance(df, pl.LazyFrame) else df
+    )
 
-    if id not in df.columns or code not in df.columns:
-        raise KeyError(f"Missing column(s). Ensure column(s) {id}, {code} are present.")
+    if id_col not in working_df.columns or code_col not in working_df.columns:
+        raise KeyError(f"Columns '{id_col}' and '{code_col}' must be present.")
 
-    df = df.drop_nulls(subset=[id, code])
+    logger.debug(f"Processing {working_df.height} rows for disability identification")
 
-    dfid = df.select(id).unique()
+    working_df = working_df.drop_nulls(subset=[id_col, code_col])
+    dfid = working_df.select(id_col).unique()
 
-    icd = df.get_column(code).unique().to_list()
+    # Get unique codes and build reverse mapping
+    icd_codes = working_df.get_column(code_col).unique().to_list()
 
     reverse_mapping = {
-        i: k for i in icd for k, v in impairments.items() if i.startswith(tuple(v))
+        code: impairment
+        for code in icd_codes
+        for impairment, prefixes in _IMPAIRMENT_PREFIXES.items()
+        if code.startswith(prefixes)
     }
 
     # Keep only codes that are in mapping
-    df = df.with_columns(
-        pl.col(code)
-        .replace_strict(reverse_mapping, default=None, return_dtype=pl.Utf8)
-        .alias("mapped_code"),
+    working_df = working_df.with_columns(
+        pl.col(code_col)
+        .replace_strict(reverse_mapping, default=None)
+        .alias("mapped_code")
     )
 
-    df = df.filter(pl.col("mapped_code").is_not_null()).unique(
-        subset=[id, "mapped_code"],
+    working_df = working_df.filter(pl.col("mapped_code").is_not_null()).unique(
+        subset=[id_col, "mapped_code"]
     )
 
-    # Create pivot table: one row per ID, one column per impairment
-    df = df.with_columns(tmp=pl.lit(1))
+    # Create pivot table using native Polars pivot
+    if working_df.height == 0:
+        # No matches found - return dfid with all impairment columns as 0
+        result = dfid.clone()
+        for imp in impairments:
+            result = result.with_columns(pl.lit(0).alias(imp))
+        return result
+
+    working_df = working_df.with_columns(tmp=pl.lit(1))
 
     # Group by id and pivot to get one column per impairment
     # For each unique impairment code, create a binary indicator (0/1)
     # showing whether that impairment exists for the patient
     pivot_expr = []
-    unique_impairments = df.get_column("mapped_code").unique().to_list()
+    unique_impairments = working_df.get_column("mapped_code").unique().to_list()
 
     for c in unique_impairments:
         pivot_expr.append(
@@ -60,12 +97,21 @@ def disability(df: pl.DataFrame, id: str = "id", code: str = "code") -> pl.DataF
             .then(pl.col("tmp"))
             .otherwise(0)
             .max()
-            .alias(c),
+            .alias(c)
         )
 
-    df = df.group_by(id).agg(pivot_expr)
+    working_df = working_df.group_by(id_col).agg(pivot_expr)
 
-    # Merge back into original list of ids. Fill missing values with 0.
-    df = dfid.join(df, on=id, how="left").fill_null(0)
+    # Merge back into original list of IDs, fill missing with 0
+    result = dfid.join(working_df, on=id_col, how="left").fill_null(0)
 
-    return df
+    # Add missing impairment columns (if any impairment type not present in data)
+    for imp in impairments:
+        if imp not in result.columns:
+            result = result.with_columns(pl.lit(0).alias(imp))
+
+    logger.debug(
+        f"Disability identification complete. Output: {result.height} patients"
+    )
+
+    return result

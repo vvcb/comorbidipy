@@ -1,16 +1,16 @@
-comorbidiPy
-===========
+# comorbidipy
 
-[![PyPi](https://img.shields.io/pypi/v/comorbidipy)](https://pypi.python.org/pypi/comorbidipy)
-[![Build](https://github.com/vvcb/comorbidipy/actions/workflows/publish-to-pypi.yaml/badge.svg)](https://pypi.org/project/comorbidipy/)
-[![Build](https://github.com/vvcb/comorbidipy/actions/workflows/publish-to-test-pypi.yaml/badge.svg)](https://test.pypi.org/project/comorbidipy)
-[![Docs](https://readthedocs.org/projects/comorbidipy/badge/?version=latest)](https://comorbidipy.readthedocs.io/en/latest/?version=latest)
+[![PyPI](https://img.shields.io/pypi/v/comorbidipy)](https://pypi.python.org/pypi/comorbidipy)
+[![Tests](https://github.com/vvcb/comorbidipy/actions/workflows/tests.yml/badge.svg)](https://github.com/vvcb/comorbidipy/actions/workflows/tests.yml)
+[![Docs](https://github.com/vvcb/comorbidipy/actions/workflows/docs.yml/badge.svg)](https://vvcb.github.io/comorbidipy)
+[![Python](https://img.shields.io/badge/python-3.13+-blue.svg)](https://www.python.org/downloads/)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
 
-Python package to calculate comorbidity scores and other clinical risk scores.
+A high-performance Python package for calculating comorbidity scores and clinical risk scores from ICD codes.
 
-The `comorbidity` function of this library is effectively a rewrite of the excellent R library `comorbidity` (<https://github.com/ellessenne/comorbidity/>) by Alessandro Gasparini (<https://www.ellessenne.xyz/>).
+Built with [Polars](https://pola.rs/) for blazing-fast processing of large datasets.
 
-Comorbidipy also includes additional clinical risk calculators listed below.
+## Features
 
 Installation
 ------------
@@ -99,49 +99,85 @@ id,code
 Feature List
 ------------
 
-- Charlson Comorbidity Score
-- Elixhauser Comorbidity Index
-- Hospital Frailty Risk Score
-- Disability and Sensory Impairments
+## Installation
 
-Variants of Charlson and Elixhauser Scores
-------------------------------------------
+```bash
+pip install comorbidipy
+```
 
-The `comorbidity` function allows calculation of Charlson and Elixhauser score using ICD9 or ICD10 codes and the following variations.
+Requires Python 3.13+.
 
-Variations of Charlson Comorbidity Score
-----------------------------------------
+## Quick Start
 
-- Mapping:
-  - Quan version
-  - Swedish version
-  - Australian version
-  - UK version (from Summary Hospital-Level Mortality Indicator - SHMI)
+### Python API
 
-- Weights:
-  - Charlson
-  - Quan
-  - SHMI
-  - Modified SHMI
+```python
+import polars as pl
+from comorbidipy import comorbidity, hfrs, disability
 
-Elixhauser Comorbidity Index
-----------------------------
+# Sample data
+df = pl.DataFrame({
+    "id": ["P001", "P001", "P002", "P002"],
+    "code": ["I21", "E112", "I50", "J44"],
+    "age": [65, 65, 72, 72],
+})
 
-- Mapping:
-  - Quan
+# Calculate Charlson Comorbidity Index
+result = comorbidity(df, id="id", code="code", age="age")
 
-- Weights:
-  - van Walraven
-  - Swiss
+# Calculate Hospital Frailty Risk Score
+frailty = hfrs(df, id="id", code="code")
 
-License and Documentation
--------------------------
+# Identify disabilities
+disabilities = disability(df, id="id", code="code")
+```
 
-- Free software: MIT license
-- Documentation: <https://comorbidipy.readthedocs.io>. (TODO)
+### Command Line Interface
 
-Credits
--------
+```bash
+# Charlson score
+comorbidipy charlson input.csv output.csv --age-col age
 
-- __Cookiecutter__ <https://github.com/audreyr/cookiecutter>
-- __R library `comorbidity`__ <https://github.com/ellessenne/comorbidity/>
+# Elixhauser score
+comorbidipy elixhauser input.parquet output.parquet --weights vanwalraven
+
+# Hospital Frailty Risk Score
+comorbidipy hfrs input.csv output.csv
+
+# Disability identification
+comorbidipy disability input.csv output.csv
+
+# Show available options
+comorbidipy info
+```
+
+Supported file formats: CSV, Parquet, JSON, NDJSON, Avro.
+
+## Charlson Variants
+
+| Mapping | ICD-9 | ICD-10 | Description |
+|---------|-------|--------|-------------|
+| `quan` | ✅ | ✅ | Quan et al. (2005) |
+| `swedish` | ❌ | ✅ | Swedish National Patient Register |
+| `australian` | ❌ | ✅ | Australian IHW adaptation |
+| `shmi` | ❌ | ✅ | UK SHMI specification |
+
+| Weighting | Description |
+|-----------|-------------|
+| `charlson` | Original 1987 weights |
+| `quan` | Quan et al. updated weights |
+| `shmi` | UK SHMI weights |
+| `shmi_modified` | Modified SHMI weights |
+
+## Documentation
+
+Full documentation: [https://vvcb.github.io/comorbidipy](https://vvcb.github.io/comorbidipy)
+
+## License
+
+MIT License – see [LICENSE](LICENSE) for details.
+
+## Credits
+
+- Inspired by the R library [`comorbidity`](https://github.com/ellessenne/comorbidity/) by Alessandro Gasparini
+- Built with [Polars](https://pola.rs/) and [Typer](https://typer.tiangolo.com/)

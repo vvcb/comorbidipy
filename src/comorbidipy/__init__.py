@@ -1,6 +1,6 @@
-"""Comorbidipy: Calculate comorbidity scores and clinical risk scores."""
+"""comorbidipy: Calculate comorbidity scores and clinical risk scores from ICD codes."""
 
-__version__ = "0.6.0"
+__version__ = "0.7.0"
 
 from comorbidipy.calculators.comorbidity import (
     ICDVersion,

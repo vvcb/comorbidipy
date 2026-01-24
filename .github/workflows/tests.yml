@@ -1,0 +1,46 @@
+name: Tests
+
+on:
+    pull_request:
+        branches:
+            - main
+    push:
+        branches:
+            - main
+    workflow_dispatch:
+
+jobs:
+    test:
+        runs-on: ubuntu-latest
+        strategy:
+            fail-fast: false
+            matrix:
+                python-version: ["3.13"]
+
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
+
+            - name: Install uv
+              uses: astral-sh/setup-uv@v4
+              with:
+                  version: "latest"
+
+            - name: Set up Python ${{ matrix.python-version }}
+              uses: actions/setup-python@v5
+              with:
+                  python-version: ${{ matrix.python-version }}
+
+            - name: Install dependencies
+              run: uv sync --group dev
+
+            - name: Run linting
+              run: |
+                  uv run ruff check src/
+                  uv run ruff format --check src/
+
+            - name: Run tests
+              run: uv run pytest -v --tb=short
+
+            - name: Type checking
+              run: uv run mypy src/comorbidipy --ignore-missing-imports
