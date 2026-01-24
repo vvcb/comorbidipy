@@ -232,10 +232,10 @@ def comorbidity(  # noqa: PLR0913
         Polars DataFrame: Returns dataframe with one row per `id_col`. The dataframe
             will contain comorbidities in columns as well as a `comorbidity_score`
             column. If `score`=="charlson" and `age_col` is given,
-            `age_adjusted_comorbidity_score` and `survival_10yr` are calculated as
+            `age_adj_comorbidity_score` and `survival_10yr` are calculated as
             below.
 
-        age_adjusted_comorbidity_score = comorbidity_score + 1 point for every decade
+        age_adj_comorbidity_score = comorbidity_score + 1 point for every decade
             over 40 upto a maximum of 4 points
 
         .. math::
