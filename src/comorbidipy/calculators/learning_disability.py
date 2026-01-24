@@ -41,21 +41,19 @@ def disability(
         ... })
         >>> disability(df)
     """
-    # Handle LazyFrame input
-    is_lazy = isinstance(df, pl.LazyFrame)
-    if is_lazy:
-        df = df.collect()
+    # Handle LazyFrame input - collect to DataFrame
+    working_df: pl.DataFrame = df.collect() if isinstance(df, pl.LazyFrame) else df
 
-    if id_col not in df.columns or code_col not in df.columns:
+    if id_col not in working_df.columns or code_col not in working_df.columns:
         raise KeyError(f"Columns '{id_col}' and '{code_col}' must be present.")
 
-    logger.debug(f"Processing {df.height} rows for disability identification")
+    logger.debug(f"Processing {working_df.height} rows for disability identification")
 
-    df = df.drop_nulls(subset=[id_col, code_col])
-    dfid = df.select(id_col).unique()
+    working_df = working_df.drop_nulls(subset=[id_col, code_col])
+    dfid = working_df.select(id_col).unique()
 
     # Get unique codes and build reverse mapping
-    icd_codes = df.get_column(code_col).unique().to_list()
+    icd_codes = working_df.get_column(code_col).unique().to_list()
 
     reverse_mapping = {
         code: impairment
@@ -65,29 +63,29 @@ def disability(
     }
 
     # Keep only codes that are in mapping
-    df = df.with_columns(
+    working_df = working_df.with_columns(
         pl.col(code_col)
         .replace_strict(reverse_mapping, default=None)
         .alias("mapped_code")
     )
 
-    df = df.filter(pl.col("mapped_code").is_not_null()).unique(
+    working_df = working_df.filter(pl.col("mapped_code").is_not_null()).unique(
         subset=[id_col, "mapped_code"]
     )
 
     # Create pivot table using native Polars pivot
-    if df.height == 0:
+    if working_df.height == 0:
         # No matches found - return dfid with all impairment columns as 0
         result = dfid.clone()
         for imp in impairments:
             result = result.with_columns(pl.lit(0).alias(imp))
         return result
 
-    df = df.with_columns(tmp=pl.lit(1))
+    working_df = working_df.with_columns(tmp=pl.lit(1))
 
     # Group by id and pivot to get one column per impairment
     pivot_expr = []
-    unique_impairments = df.get_column("mapped_code").unique().to_list()
+    unique_impairments = working_df.get_column("mapped_code").unique().to_list()
 
     for c in unique_impairments:
         pivot_expr.append(
@@ -98,10 +96,10 @@ def disability(
             .alias(c)
         )
 
-    df = df.group_by(id_col).agg(pivot_expr)
+    working_df = working_df.group_by(id_col).agg(pivot_expr)
 
     # Merge back into original list of IDs, fill missing with 0
-    result = dfid.join(df, on=id_col, how="left").fill_null(0)
+    result = dfid.join(working_df, on=id_col, how="left").fill_null(0)
 
     # Add missing impairment columns (if any impairment type not present in data)
     for imp in impairments:

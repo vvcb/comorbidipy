@@ -110,7 +110,7 @@ colnames = {
 }
 
 
-def _assignzero(df: pl.DataFrame, score: ScoreType) -> pl.DataFrame:
+def _assignzero(df: pl.DataFrame, score: str) -> pl.DataFrame:
     if "charlson" in score:
         # "Mild liver disease" (`mld`) and "Moderate/severe liver disease" (`msld`)
         df = df.with_columns(
@@ -194,10 +194,10 @@ def _add_age_weighting(dfp: pl.DataFrame, age: str) -> pl.DataFrame:
 
 
 def comorbidity(  # noqa: PLR0913
-    df: pl.DataFrame,
+    df: pl.DataFrame | pl.LazyFrame,
     id: str = "id",
     code: str = "code",
-    age: str = "age",
+    age: str | None = None,
     score: ScoreType = ScoreType.CHARLSON,
     icd: ICDVersion = ICDVersion.ICD10,
     variant: MappingVariant = MappingVariant.QUAN,
@@ -240,20 +240,23 @@ def comorbidity(  # noqa: PLR0913
             10yr survival = 0.983^(e^(0.9 * comorbidity_score))
 
     """
+    # Handle LazyFrame input - collect to DataFrame
+    working_df: pl.DataFrame = df.collect() if isinstance(df, pl.LazyFrame) else df
+
     # check the dataframe contains the required columns
-    if id not in df.columns or code not in df.columns:
+    if id not in working_df.columns or code not in working_df.columns:
         raise KeyError(f"Missing column(s). Ensure column(s) {id}, {code} are present.")
 
     # Drop rows with NAs in required columns
-    df = df.drop_nulls(subset=[id, code])
+    working_df = working_df.drop_nulls(subset=[id, code])
 
     # Prepare id dataframe
     if age:
-        if age not in df.columns:
+        if age not in working_df.columns:
             raise KeyError(f"Column age was assigned {age} but not found")
-        dfid = df.select(id, age).unique(subset=[id])
+        dfid = working_df.select(id, age).unique(subset=[id])
     else:
-        dfid = df.select(id).unique()
+        dfid = working_df.select(id).unique()
 
     score_icd_variant = f"{score}_{icd}_{variant}"
 
@@ -264,7 +267,7 @@ def comorbidity(  # noqa: PLR0913
         )
 
     # Create reverse mapping dictionary
-    codes = df.get_column(code).unique().to_list()
+    codes = working_df.get_column(code).unique().to_list()
     reverse_mapping = {
         i: k
         for i in codes
@@ -273,20 +276,20 @@ def comorbidity(  # noqa: PLR0913
     }
 
     # Keep only codes that are in mapping
-    df = df.with_columns(
+    working_df = working_df.with_columns(
         pl.col(code).replace_strict(reverse_mapping, default=None).alias("mapped_code"),
     )
 
-    df = df.filter(pl.col("mapped_code").is_not_null())
-    df = df.unique(subset=[id, "mapped_code"])
+    working_df = working_df.filter(pl.col("mapped_code").is_not_null())
+    working_df = working_df.unique(subset=[id, "mapped_code"])
 
     # Create pivot table: one row per ID, one column per comorbidity
     # First, add a tmp column with value 1
-    df = df.with_columns(tmp=pl.lit(1))
+    working_df = working_df.with_columns(tmp=pl.lit(1))
 
     # Group by id and pivot to get one column per comorbidity
     pivot_expr = []
-    unique_codes = df.get_column("mapped_code").unique().to_list()
+    unique_codes = working_df.get_column("mapped_code").unique().to_list()
 
     for c in unique_codes:
         pivot_expr.append(
@@ -297,7 +300,7 @@ def comorbidity(  # noqa: PLR0913
             .alias(c),
         )
 
-    dfp = df.group_by(id).agg(pivot_expr)
+    dfp = working_df.group_by(id).agg(pivot_expr)
 
     # If a particular comorbidity does not occur at all in the dataset,
     # create a column and assign 0
