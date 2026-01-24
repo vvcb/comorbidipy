@@ -25,7 +25,8 @@ classifiers = [
 ]
 
 [project.scripts]
-omcp = "comorbidipy.cli:main"
+comorbidipy = "comorbidipy.cli:main"
+cmpy = "comorbidipy.cli:main"
 
 [project.urls]
 Homepage = "https://github.com/vvcb/comorbidipy"
