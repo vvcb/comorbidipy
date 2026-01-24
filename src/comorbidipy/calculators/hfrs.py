@@ -42,25 +42,25 @@ def hfrs(
         ... })
         >>> hfrs(df)
     """
-    # Handle LazyFrame input
-    is_lazy = isinstance(df, pl.LazyFrame)
-    if is_lazy:
-        df = df.collect()
+    # Handle LazyFrame input - collect to DataFrame with streaming for large data
+    working_df: pl.DataFrame = (
+        df.collect(engine="streaming") if isinstance(df, pl.LazyFrame) else df
+    )
 
-    if id_col not in df.columns or code_col not in df.columns:
+    if id_col not in working_df.columns or code_col not in working_df.columns:
         raise KeyError(f"Columns '{id_col}' and '{code_col}' must be present.")
 
-    logger.debug(f"Processing {df.height} rows for HFRS calculation")
+    logger.debug(f"Processing {working_df.height} rows for HFRS calculation")
 
     # Keep only required columns and drop missing/duplicates
-    df = df.select(id_col, code_col).drop_nulls().unique()
+    working_df = working_df.select(id_col, code_col).drop_nulls().unique()
 
     # Store unique IDs for later join
-    dfid = df.select(id_col).unique()
+    dfid = working_df.select(id_col).unique()
 
     # Extract first 3 characters, strip whitespace, and uppercase using native Polars
     # This replaces the slow map_elements call
-    df = df.with_columns(
+    working_df = working_df.with_columns(
         pl.col(code_col)
         .str.strip_chars()
         .str.slice(0, 3)
@@ -69,17 +69,17 @@ def hfrs(
     )
 
     # Filter to only codes that exist in HFRS mapping
-    df = df.filter(pl.col("mapped_code").is_in(_HFRS_CODES)).unique()
+    working_df = working_df.filter(pl.col("mapped_code").is_in(_HFRS_CODES)).unique()
 
     # Replace with HFRS weights and sum by ID
-    df = df.with_columns(
+    working_df = working_df.with_columns(
         pl.col("mapped_code").replace_strict(hfrs_mapping).alias("hfrs")
     )
 
-    df = df.group_by(id_col).agg(pl.sum("hfrs"))
+    working_df = working_df.group_by(id_col).agg(pl.sum("hfrs"))
 
     # Merge back into original list of IDs, fill missing with 0
-    result = dfid.join(df, on=id_col, how="left").fill_null(0)
+    result = dfid.join(working_df, on=id_col, how="left").fill_null(0)
 
     logger.debug(f"HFRS calculation complete. Output: {result.height} patients")
 

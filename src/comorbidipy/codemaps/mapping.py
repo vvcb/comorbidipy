@@ -1,5 +1,5 @@
 # Empty list
-mapping = {}
+mapping: dict[str, dict[str, tuple[str, ...]]] = {}
 
 # Charlson score, ICD9
 tmpn = "charlson_icd9_quan"
