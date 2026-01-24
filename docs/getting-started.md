@@ -105,7 +105,7 @@ comorbidipy charlson input.csv output.csv \
     --weights charlson
 
 # Calculate HFRS
-comorbidipy hfrs input.parquet output.parquet
+comorbidipy hfrs-cmd input.parquet output.parquet
 
 # Show available options
 comorbidipy info
