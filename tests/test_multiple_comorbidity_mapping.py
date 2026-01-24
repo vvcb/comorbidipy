@@ -77,7 +77,8 @@ class TestMultipleComorbidityMapping:
     def test_original_issue_example(self):
         """Test the exact example from the GitHub issue.
 
-        Issue: https://github.com/vvcb/comorbidipy/issues/XX
+        Reproduces the bug where codes mapping to multiple comorbidities
+        only mapped to one.
         """
         df = pl.DataFrame({"id": [1, 1, 1], "code": ["I2782", "I426", "F315"]})
 
