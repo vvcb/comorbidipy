@@ -53,6 +53,7 @@ dev = [
     "pytest-cov>=7.0.0",
     "ruff>=0.11.6",
 ]
+
 [tool.ruff]
 # Exclude files and directories
 exclude = [".git", ".venv", "__pycache__", "build", "dist"]
@@ -75,9 +76,7 @@ select = [
     "UP", # pyupgrade
 ]
 
-ignore = [
-    "PD901", # Avoid using generic dataframe names like df
-]
+ignore = []
 
 # Allow autofix for all enabled rules (when `--fix` is provided)
 fixable = ["ALL"]
