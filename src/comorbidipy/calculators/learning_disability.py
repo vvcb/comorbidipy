@@ -49,6 +49,8 @@ def disability(df: pl.DataFrame, id: str = "id", code: str = "code") -> pl.DataF
     df = df.with_columns(tmp=pl.lit(1))
 
     # Group by id and pivot to get one column per impairment
+    # For each unique impairment code, create a binary indicator (0/1)
+    # showing whether that impairment exists for the patient
     pivot_expr = []
     unique_impairments = df.get_column("mapped_code").unique().to_list()
 

@@ -286,6 +286,8 @@ def comorbidity(  # noqa: PLR0913
     df = df.with_columns(tmp=pl.lit(1))
 
     # Group by id and pivot to get one column per comorbidity
+    # For each unique comorbidity code, create a binary indicator (0/1)
+    # showing whether that comorbidity exists for the patient
     pivot_expr = []
     unique_codes = df.get_column("mapped_code").unique().to_list()
 

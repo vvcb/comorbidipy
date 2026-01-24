@@ -149,7 +149,8 @@ def comorbidity(
         bool,
         typer.Option(
             "--assign-zero/--no-assign-zero",
-            help="Set less severe comorbidity to 0 if more severe form is present",
+            help="Set less severe comorbidity to 0 if more severe form is present "
+            "(e.g., diabetes without complications → 0 if diabetes with complications is present)",
         ),
     ] = True,
 ) -> None:
