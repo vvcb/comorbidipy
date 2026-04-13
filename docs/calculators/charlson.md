@@ -110,10 +110,11 @@ comorbidipy charlson input.csv output.csv --mapping swedish
 
 When age is provided with the original Charlson weights, the score includes an age component:
 
-- Age 40-49: +1 point
-- Age 50-59: +2 points
-- Age 60-69: +3 points
-- Age 70+: +4 points
+- Age 40-49: +0 points
+- Age 50-59: +1 point
+- Age 60-69: +2 points
+- Age 70-79: +3 points
+- Age 80+: +4 points
 
 The output includes:
 - `comorbidity_score`: Base score without age adjustment
