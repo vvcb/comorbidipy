@@ -25,7 +25,12 @@ def comorbidity(
 
     Args:
         df: DataFrame with patient IDs and ICD codes.
-        id_col: Name of the column containing patient identifiers.
+        id_col: Name of the column containing patient identifiers. This
+            value is used as both the input column name and the output
+            column name in the returned DataFrame — no renaming is
+            performed. For example, passing ``id_col="PATIENT_ID"``
+            produces a result whose first column is also named
+            ``PATIENT_ID``.
         code_col: Name of the column containing ICD codes.
         age_col: Name of the column containing patient age (optional).
             When provided with Charlson score and Charlson weights,
@@ -88,12 +93,15 @@ def hfrs(
 
     Args:
         df: DataFrame with patient IDs and ICD-10 codes.
-        id_col: Name of the column containing patient identifiers.
+        id_col: Name of the column containing patient identifiers. This
+            value is used as both the input column name and the output
+            column name in the returned DataFrame — no renaming is
+            performed.
         code_col: Name of the column containing ICD codes.
 
     Returns:
         DataFrame with columns:
-        - Patient ID (original column name)
+        - Patient ID (column name matches ``id_col`` parameter)
         - hfrs_score: Continuous frailty score
         - hfrs_category: "Low" (<5), "Intermediate" (5-15), or "High" (>15)
 
@@ -141,12 +149,15 @@ def disability(
 
     Args:
         df: DataFrame with patient IDs and ICD-10 codes.
-        id_col: Name of the column containing patient identifiers.
+        id_col: Name of the column containing patient identifiers. This
+            value is used as both the input column name and the output
+            column name in the returned DataFrame — no renaming is
+            performed.
         code_col: Name of the column containing ICD codes.
 
     Returns:
         DataFrame with columns:
-        - Patient ID (original column name)
+        - Patient ID (column name matches ``id_col`` parameter)
         - ld_asd: 1 if learning disability/ASD present, 0 otherwise
         - impaired_vision: 1 if visual impairment present, 0 otherwise
         - impaired_hearing: 1 if hearing impairment present, 0 otherwise
