@@ -336,6 +336,26 @@ class TestSyntheticData:
         # Only patients with valid id and code should be included
         assert result.height <= 3
 
+    def test_custom_id_col_name_preserved_in_output(self):
+        """Output schema should use the exact id_col name, not a renamed column."""
+        df = pl.DataFrame(
+            {
+                "PATIENT_ID": ["P001", "P001", "P002"],
+                "ICD10_CODE": ["I21", "I50", "J44"],
+            }
+        )
+        result = comorbidity(
+            df,
+            id_col="PATIENT_ID",
+            code_col="ICD10_CODE",
+            age_col=None,
+        )
+
+        assert "PATIENT_ID" in result.columns, (
+            "Output column name must match the id_col parameter exactly"
+        )
+        assert result.columns[0] == "PATIENT_ID"
+
 
 class TestPerformance:
     """Performance-related tests."""

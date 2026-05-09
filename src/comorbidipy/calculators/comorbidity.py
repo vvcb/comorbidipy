@@ -210,7 +210,12 @@ def comorbidity(  # noqa: PLR0913
     Args:
         df: Polars DataFrame with at least 2 columns for id and code.
         id_col: Name of column with unique identifier. This may be for a
-            single patient or an episode. Defaults to "id".
+            single patient or an episode. Defaults to "id". The value of
+            this parameter is used as both the input column name and the
+            output column name in the returned DataFrame — no renaming is
+            performed. If your DataFrame uses a column called "PATIENT_ID",
+            pass ``id_col="PATIENT_ID"`` and the result will also contain a
+            column named "PATIENT_ID".
         code_col: Name of column with ICD codes. Defaults to "code".
         age_col: Name of column with age. Defaults to None. If age is not
             provided, set this to None.

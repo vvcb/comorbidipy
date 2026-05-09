@@ -24,7 +24,10 @@ def hfrs(
 
     Args:
         df: DataFrame with patient IDs and ICD-10 codes.
-        id_col: Name of column containing patient identifiers.
+        id_col: Name of column containing patient identifiers. Defaults to
+            "id". The value of this parameter is used as both the input
+            column name and the output column name in the returned DataFrame
+            — no renaming is performed.
         code_col: Name of column containing ICD-10 codes.
 
     Returns:
